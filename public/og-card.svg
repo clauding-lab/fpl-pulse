@@ -1,0 +1,11 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0a0e17"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#00ff87"/>
+  <circle cx="100" cy="290" r="12" fill="#00ff87" opacity="0.8"/>
+  <text x="130" y="300" font-family="system-ui, sans-serif" font-size="52" font-weight="800" fill="#e8edf5" letter-spacing="-1">FPL PULSE</text>
+  <rect x="430" y="272" width="70" height="28" rx="4" fill="#e8a50a"/>
+  <text x="441" y="293" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0a0e17" letter-spacing="1">BETA</text>
+  <text x="100" y="360" font-family="system-ui, sans-serif" font-size="26" fill="#8892a5" font-weight="400">Read the game before the deadline.</text>
+  <text x="100" y="420" font-family="system-ui, sans-serif" font-size="18" fill="#4a5568">Fixture Engine · Player Intel · Hidden Gems · Squad Analyzer</text>
+  <text x="100" y="530" font-family="system-ui, sans-serif" font-size="16" fill="#4a5568">Built by Adnan Rashid · Powered by Claude AI</text>
+</svg>

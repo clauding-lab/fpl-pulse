@@ -60,7 +60,28 @@ export function computeAll(apiData) {
     if (dgw.length) dgwTeams[gwNum] = dgw;
   });
 
-  // Team Run Ratings with swing detection
+  // Compute team-level xG and xGC for Attack/Defense Run ratings
+  const teamXG = {};
+  const teamXGC = {};
+  d.teams.forEach((t) => { teamXG[t.id] = { xg: 0, mins: 0 }; teamXGC[t.id] = { xgc: 0, mins: 0 }; });
+  d.elements.forEach((p) => {
+    const m = p.minutes || 0;
+    if (m < 90) return;
+    const xg = parseFloat(p.expected_goals) || 0;
+    const xgc = parseFloat(p.expected_goals_conceded) || 0;
+    teamXG[p.team].xg += xg;
+    teamXG[p.team].mins += m;
+    teamXGC[p.team].xgc += xgc;
+    teamXGC[p.team].mins += m;
+  });
+  const teamXGper90 = {};
+  const teamXGCper90 = {};
+  d.teams.forEach((t) => {
+    teamXGper90[t.id] = teamXG[t.id].mins > 0 ? (teamXG[t.id].xg / teamXG[t.id].mins) * 90 : 1.2;
+    teamXGCper90[t.id] = teamXGC[t.id].mins > 0 ? (teamXGC[t.id].xgc / teamXGC[t.id].mins) * 90 * 11 : 1.2;
+  });
+
+  // Team Run Ratings with swing detection + attack/defense run
   const tRR = d.teams
     .map((t) => {
       const f = uf[t.id] || [];
@@ -68,7 +89,15 @@ export function computeAll(apiData) {
       const pastAvg = pastFx[t.id]?.length ? pastFx[t.id].reduce((a, b) => a + b, 0) / pastFx[t.id].length : 3;
       const futAvg = f.length ? f.reduce((a, v) => a + v.fdr, 0) / f.length : 3;
       const swing = pastAvg - futAvg; // positive = upcoming easier
-      return { ...t, fixtures: f, rr, pastAvg, futAvg, swing };
+
+      // Attack Run: avg opponent xGC/90 (higher = easier to score against)
+      const atkOppXGC = f.slice(0, 6).map((fx) => teamXGCper90[fx.opp] || 1.2);
+      const atkRun = atkOppXGC.length ? atkOppXGC.reduce((a, b) => a + b, 0) / atkOppXGC.length : 1.2;
+      // Defense Run: avg opponent xG/90 (lower = easier to keep CS)
+      const defOppXG = f.slice(0, 6).map((fx) => teamXGper90[fx.opp] || 1.2);
+      const defRun = defOppXG.length ? defOppXG.reduce((a, b) => a + b, 0) / defOppXG.length : 1.2;
+
+      return { ...t, fixtures: f, rr, pastAvg, futAvg, swing, atkRun, defRun };
     })
     .sort((a, b) => a.rr - b.rr);
 

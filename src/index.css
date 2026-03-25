@@ -7,4 +7,29 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Smooth scrolling for horizontal tables */
+::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2a4280;
+  border-radius: 4px;
+}
+
+/* Mobile: tighter padding and smaller fonts */
+@media (max-width: 640px) {
+  table { font-size: 11px !important; }
+  table th, table td { padding: 6px 4px !important; }
+}
+
+/* Ensure fixture grid doesn't break on mobile */
+@media (max-width: 480px) {
+  table { min-width: 600px; }
 }

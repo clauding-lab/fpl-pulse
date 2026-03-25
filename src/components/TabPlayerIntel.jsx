@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
-import { SubBtn, PlayerTable, Card } from "./shared";
+import { SubBtn, PlayerTable, Card, Sparkline } from "./shared";
+import { usePlayerHistory } from "../hooks/usePlayerHistory";
 
 export default function TabPlayerIntel({ data }) {
   const [subTab, setSubTab] = useState(0);
   const [posF, setPosF] = useState(0);
 
   const fForm = posF === 0 ? data.fPl : data.fPl.filter((p) => p.pos === posF);
+
+  // Fetch sparkline data for visible top 30 form players
+  const sparklineIds = useMemo(() => fForm.slice(0, 30).map((p) => p.id), [fForm]);
+  const sparkData = usePlayerHistory(subTab === 0 ? sparklineIds : []);
 
   return (
     <div>
@@ -59,6 +64,13 @@ export default function TabPlayerIntel({ data }) {
             columns={[
               { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
               { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
+              {
+                header: "Last 8",
+                render: (p) => {
+                  const d = sparkData[p.id];
+                  return <Sparkline data={d} color={p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red} />;
+                },
+              },
               {
                 header: "Pos",
                 render: (p) => <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 10 }}>{p.posL}</span>,

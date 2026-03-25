@@ -119,6 +119,28 @@ export function PlayerTable({ players, columns }) {
   );
 }
 
+export function Sparkline({ data, width = 72, height = 24, color }) {
+  if (!data || data.length < 2) return <span style={{ color: COLORS.textMuted, fontSize: 9 }}>—</span>;
+  const c = color || COLORS.green;
+  const mn = Math.min(...data);
+  const mx = Math.max(...data);
+  const range = mx - mn || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - 2 - ((v - mn) / range) * (height - 4);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const last = data[data.length - 1];
+  const lx = width;
+  const ly = height - 2 - ((last - mn) / range) * (height - 4);
+  return (
+    <svg width={width} height={height} style={{ verticalAlign: "middle" }}>
+      <polyline points={pts.join(" ")} fill="none" stroke={c} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r={2.5} fill={c} />
+    </svg>
+  );
+}
+
 export function PulseRating({ value }) {
   const color = value >= 7 ? COLORS.red : value >= 4 ? COLORS.amber : COLORS.green;
   const label = value >= 7 ? "HIGH ALERT" : value >= 4 ? "ACTIVE WEEK" : "STEADY STATE";

@@ -41,6 +41,8 @@ export default function TabFixtureEngine({ data }) {
             <tr style={{ background: COLORS.surface }}>
               <th style={{ padding: "10px 12px", textAlign: "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10, position: "sticky", left: 0, background: COLORS.surface, zIndex: 2 }}>TEAM</th>
               <th style={{ padding: "10px 6px", textAlign: "center", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10 }}>RUN</th>
+              <th style={{ padding: "10px 4px", textAlign: "center", color: COLORS.green, fontWeight: 600, fontSize: 9 }} title="Attack Run: avg opponent xGC/90 (higher = easier to score)">ATK</th>
+              <th style={{ padding: "10px 4px", textAlign: "center", color: COLORS.blue, fontWeight: 600, fontSize: 9 }} title="Defense Run: avg opponent xG/90 (lower = easier to keep CS)">DEF</th>
               {(tRR[0]?.fixtures || []).map((_, i) => (
                 <th key={i} style={{ padding: "10px 2px", textAlign: "center", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, minWidth: 52 }}>GW{gw + i}</th>
               ))}
@@ -56,6 +58,12 @@ export default function TabFixtureEngine({ data }) {
                 </td>
                 <td style={{ padding: "8px 6px", textAlign: "center", fontWeight: 700, color: t.rr <= 2.5 ? COLORS.green : t.rr <= 3 ? COLORS.amber : COLORS.red, fontFamily: "monospace", fontSize: 12 }}>
                   {t.rr.toFixed(2)}
+                </td>
+                <td style={{ padding: "8px 4px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: t.atkRun >= 1.4 ? COLORS.green : t.atkRun >= 1.1 ? COLORS.amber : COLORS.red }}>
+                  {t.atkRun.toFixed(1)}
+                </td>
+                <td style={{ padding: "8px 4px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: t.defRun <= 1.0 ? COLORS.green : t.defRun <= 1.3 ? COLORS.amber : COLORS.red }}>
+                  {t.defRun.toFixed(1)}
                 </td>
                 {t.fixtures.map((f, i) => {
                   const o = tm[f.opp];

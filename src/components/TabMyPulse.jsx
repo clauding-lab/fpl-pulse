@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
 import { Card, StatCard } from "./shared";
 import { fetchSquad } from "../utils/api";
 import { analyzeSquad } from "../utils/calculations";
+import html2canvas from "html2canvas";
 
 function SquadPlayer({ p }) {
   const borderColor = p.status === "green" ? COLORS.green : p.status === "amber" ? COLORS.amber : COLORS.red;
@@ -145,6 +146,28 @@ export default function TabMyPulse({ data }) {
   const { squad, healthScore, weakest, replacement, bestXI, capPick, vicePick, chips } = analysis;
   const starters = squad.filter((p) => !p.isBench);
   const bench = squad.filter((p) => p.isBench);
+  const shareRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    if (!shareRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(shareRef.current, {
+        backgroundColor: COLORS.bg,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement("a");
+      link.download = `fpl-pulse-gw${data.gw}-${managerName.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("Export failed:", err);
+    }
+    setExporting(false);
+  }, [data.gw, managerName]);
 
   return (
     <div>
@@ -154,10 +177,18 @@ export default function TabMyPulse({ data }) {
           <div style={{ fontSize: 18, fontWeight: 700 }}>{managerName}</div>
           <div style={{ fontSize: 12, color: COLORS.textSecondary }}>GW{data.gw} Squad Analysis</div>
         </div>
-        <button onClick={() => setAnalysis(null)} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
-          Change Team
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={handleShare} disabled={exporting} style={{ background: COLORS.green, color: COLORS.bg, border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: exporting ? "wait" : "pointer", opacity: exporting ? 0.6 : 1 }}>
+            {exporting ? "Exporting..." : "📸 Share My Pulse"}
+          </button>
+          <button onClick={() => setAnalysis(null)} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
+            Change Team
+          </button>
+        </div>
       </div>
+
+      {/* Screenshot Zone */}
+      <div ref={shareRef} style={{ background: COLORS.bg, padding: 4 }}>
 
       {/* Health Score + Stats */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
@@ -264,6 +295,8 @@ export default function TabMyPulse({ data }) {
       <div style={{ textAlign: "center", marginTop: 16, fontSize: 10, color: COLORS.textMuted }}>
         FPL Pulse · @adnanrashid
       </div>
+
+      </div>{/* end screenshot zone */}
     </div>
   );
 }
