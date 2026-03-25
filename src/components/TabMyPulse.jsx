@@ -96,6 +96,8 @@ export default function TabMyPulse({ data }) {
   const [error, setError] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [managerName, setManagerName] = useState("");
+  const shareRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
 
   const handleFetch = async () => {
     if (!teamId.trim()) return;
@@ -146,8 +148,6 @@ export default function TabMyPulse({ data }) {
   const { squad, healthScore, weakest, replacement, bestXI, capPick, vicePick, chips } = analysis;
   const starters = squad.filter((p) => !p.isBench);
   const bench = squad.filter((p) => p.isBench);
-  const shareRef = useRef(null);
-  const [exporting, setExporting] = useState(false);
 
   const handleShare = useCallback(async () => {
     if (!shareRef.current) return;
