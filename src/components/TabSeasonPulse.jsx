@@ -98,6 +98,84 @@ function PitchFormation({ tpl }) {
   );
 }
 
+function DualBarChart({ gwA, sAvg, top100kAvgs }) {
+  const [hovered, setHovered] = useState(null);
+  const allVals = [...gwA.map((x) => x.avg), ...(top100kAvgs ? Object.values(top100kAvgs) : [])];
+  const mx = Math.max(...allVals, 1);
+  const topSeasonAvg = top100kAvgs
+    ? +(Object.values(top100kAvgs).reduce((a, b) => a + b, 0) / Object.values(top100kAvgs).length).toFixed(1)
+    : null;
+
+  return (
+    <Card>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 8 }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>AVERAGE MANAGER SCORE BY GW</div>
+        <div style={{ display: "flex", gap: 14, fontSize: 9, color: COLORS.textSecondary }}>
+          <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#22c55e", marginRight: 4, verticalAlign: "middle" }} />Above Avg</span>
+          <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#ef4444", marginRight: 4, verticalAlign: "middle" }} />Below Avg</span>
+          <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#3b82f6", marginRight: 4, verticalAlign: "middle" }} />Top 100 Elite{top100kAvgs ? "" : " (loading...)"}</span>
+        </div>
+      </div>
+      <div style={{ fontSize: 9, color: COLORS.textMuted, marginBottom: 10 }}>
+        Green = all managers scored above season avg · Red = below · Blue = top 100 ranked managers' average
+      </div>
+
+      {/* Tooltip */}
+      {hovered !== null && (
+        <div style={{
+          background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 8,
+          padding: "8px 12px", marginBottom: 8, display: "flex", gap: 16, alignItems: "center",
+          fontSize: 11, fontWeight: 600,
+        }}>
+          <span style={{ color: COLORS.text }}>GW{hovered.gw}</span>
+          <span>All: <span style={{ color: hovered.avg >= sAvg ? "#22c55e" : "#ef4444", fontFamily: "monospace" }}>{hovered.avg.toFixed(1)}</span></span>
+          {hovered.topAvg && <span>Top 100: <span style={{ color: "#3b82f6", fontFamily: "monospace" }}>{hovered.topAvg}</span></span>}
+          {hovered.topAvg && <span style={{ color: COLORS.textMuted }}>Gap: <span style={{ color: "#3b82f6", fontWeight: 700 }}>+{(hovered.topAvg - hovered.avg).toFixed(1)}</span></span>}
+        </div>
+      )}
+
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 130, paddingTop: 18 }}>
+        {gwA.map((g) => {
+          const topAvg = top100kAvgs?.[g.gw];
+          const isHovered = hovered?.gw === g.gw;
+          return (
+            <div
+              key={g.gw}
+              style={{ flex: 1, minWidth: 0, display: "flex", gap: 1, alignItems: "flex-end", cursor: "pointer", opacity: hovered && !isHovered ? 0.4 : 1, transition: "opacity 0.15s" }}
+              onMouseEnter={() => setHovered({ gw: g.gw, avg: g.avg, topAvg })}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div style={{
+                flex: 1, height: Math.max((g.avg / mx) * 110, 3),
+                background: g.avg >= sAvg ? "#22c55e" : "#ef4444",
+                borderRadius: "2px 2px 0 0",
+                transform: isHovered ? "scaleY(1.05)" : "scaleY(1)",
+                transformOrigin: "bottom",
+                transition: "transform 0.15s",
+              }} />
+              <div style={{
+                flex: 1, height: topAvg ? Math.max((topAvg / mx) * 110, 3) : 0,
+                background: "#3b82f6",
+                borderRadius: "2px 2px 0 0",
+                opacity: topAvg ? 1 : 0,
+                transform: isHovered ? "scaleY(1.05)" : "scaleY(1)",
+                transformOrigin: "bottom",
+                transition: "all 0.15s",
+              }} />
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ height: 1, background: `${COLORS.amber}50`, marginBottom: 6 }} />
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW1</span>
+        <span style={{ fontSize: 10, color: COLORS.amber }}>All Avg: {sAvg.toFixed(1)}{topSeasonAvg ? ` · Top 100 Avg: ${topSeasonAvg}` : ""}</span>
+        <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW{gwA.length}</span>
+      </div>
+    </Card>
+  );
+}
+
 export default function TabSeasonPulse({ data }) {
   const { glance, gwA, sAvg, defcon, seasonValue, formValue, tpl, tH, risers, fallers, tm, uf } = data;
 
@@ -418,55 +496,8 @@ export default function TabSeasonPulse({ data }) {
         )}
       </Card>
 
-      {/* Panel 5: Average Manager Score by GW — Dual Bar */}
-      <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>AVERAGE MANAGER SCORE BY GW</div>
-          <div style={{ display: "flex", gap: 12, fontSize: 9 }}>
-            <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: `${COLORS.green}70`, marginRight: 4, verticalAlign: "middle" }} />All Managers</span>
-            <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS.blue, marginRight: 4, verticalAlign: "middle" }} />Top 100{top100kAvgs ? "" : " (loading...)"}</span>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 120, paddingTop: 18 }}>
-          {gwA.map((g) => {
-            const topAvg = top100kAvgs?.[g.gw];
-            const allVals = [...gwA.map((x) => x.avg), ...(top100kAvgs ? Object.values(top100kAvgs) : [])];
-            const mx = Math.max(...allVals, 1);
-            return (
-              <div key={g.gw} style={{ flex: 1, minWidth: 0, display: "flex", gap: 1, alignItems: "flex-end" }}>
-                {/* All managers bar */}
-                <div
-                  title={`GW${g.gw} All: ${g.avg.toFixed(1)} pts`}
-                  style={{
-                    flex: 1, height: Math.max((g.avg / mx) * 100, 3),
-                    background: g.avg >= sAvg ? `${COLORS.green}50` : `${COLORS.red}35`,
-                    borderRadius: "2px 2px 0 0",
-                    cursor: "pointer",
-                  }}
-                />
-                {/* Top 100K bar */}
-                <div
-                  title={topAvg ? `GW${g.gw} Top 100: ${topAvg} pts` : `GW${g.gw} Top 100: loading...`}
-                  style={{
-                    flex: 1, height: topAvg ? Math.max((topAvg / mx) * 100, 3) : 0,
-                    background: COLORS.blue,
-                    borderRadius: "2px 2px 0 0",
-                    opacity: topAvg ? 0.7 : 0,
-                    cursor: "pointer",
-                    transition: "height 0.3s ease, opacity 0.3s ease",
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ height: 1, background: `${COLORS.amber}50`, marginBottom: 6 }} />
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW1</span>
-          <span style={{ fontSize: 10, color: COLORS.amber }}>All Avg: {sAvg.toFixed(1)}</span>
-          <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW{gwA.length}</span>
-        </div>
-      </Card>
+      {/* Panel 5: Average Manager Score by GW — Interactive Dual Bar */}
+      <DualBarChart gwA={gwA} sAvg={sAvg} top100kAvgs={top100kAvgs} />
 
     </div>
   );

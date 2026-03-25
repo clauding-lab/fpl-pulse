@@ -8,25 +8,26 @@ import { usePlayerHistory } from "../hooks/usePlayerHistory";
 function Last3Chart({ points }) {
   if (!points || points.length < 2) return <span style={{ color: COLORS.textMuted, fontSize: 9 }}>—</span>;
   const last3 = points.slice(-3);
-  const w = 90, h = 36;
+  const w = 100, h = 50, topPad = 14, botPad = 4;
   const mx = Math.max(...last3, 1);
   const mn = Math.min(...last3, 0);
   const range = mx - mn || 1;
+  const chartH = h - topPad - botPad;
   const pts = last3.map((v, i) => {
-    const x = 8 + (i / (last3.length - 1)) * (w - 16);
-    const y = h - 6 - ((v - mn) / range) * (h - 14);
+    const x = 12 + (i / (last3.length - 1)) * (w - 24);
+    const y = topPad + chartH - ((v - mn) / range) * chartH;
     return { x, y, v };
   });
   const line = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const area = `${pts[0].x.toFixed(1)},${h - 2} ${line} ${pts[pts.length - 1].x.toFixed(1)},${h - 2}`;
+  const area = `${pts[0].x.toFixed(1)},${h - botPad} ${line} ${pts[pts.length - 1].x.toFixed(1)},${h - botPad}`;
   return (
-    <svg width={w} height={h}>
+    <svg width={w} height={h} style={{ overflow: "visible" }}>
       <polygon points={area} fill={`${COLORS.green}15`} />
       <polyline points={line} fill="none" stroke={COLORS.green} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
       {pts.map((p, i) => (
         <g key={i}>
           <circle cx={p.x} cy={p.y} r={3} fill={COLORS.green} />
-          <text x={p.x} y={p.y - 6} textAnchor="middle" fill={COLORS.text} fontSize={9} fontWeight={700}>{p.v}</text>
+          <text x={p.x} y={p.y - 8} textAnchor="middle" fill={COLORS.text} fontSize={10} fontWeight={700}>{p.v}</text>
         </g>
       ))}
     </svg>
