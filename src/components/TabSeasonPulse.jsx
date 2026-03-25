@@ -101,6 +101,29 @@ function PitchFormation({ tpl }) {
 export default function TabSeasonPulse({ data }) {
   const { glance, gwA, sAvg, defcon, seasonValue, formValue, tpl, tH, risers, fallers, tm, uf } = data;
 
+  // Top 100K GW averages
+  const [top100kAvgs, setTop100kAvgs] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const cacheKey = `fpl_top100k_avg_gw${glance.gw}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) { setTop100kAvgs(JSON.parse(cached)); return; }
+
+    fetch("/api/top100k-avg")
+      .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
+      .then((d) => {
+        if (!cancelled) {
+          const map = {};
+          d.gwAvgs.forEach((g) => { map[g.gw] = g.avg; });
+          setTop100kAvgs(map);
+          sessionStorage.setItem(cacheKey, JSON.stringify(map));
+        }
+      })
+      .catch(() => { /* silently fail — chart still works without top100k */ });
+    return () => { cancelled = true; };
+  }, [glance.gw]);
+
   // Smart Money: fetch Top 500 ownership on mount
   const [smartMoney, setSmartMoney] = useState(null);
   const [smLoading, setSmLoading] = useState(false);
@@ -395,22 +418,52 @@ export default function TabSeasonPulse({ data }) {
         )}
       </Card>
 
-      {/* Panel 5: Average Manager Score by GW */}
+      {/* Panel 5: Average Manager Score by GW — Dual Bar */}
       <Card>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>AVERAGE MANAGER SCORE BY GW</div>
-        <InteractiveBarChart
-          data={gwA}
-          labelKey="gw"
-          valueKey="avg"
-          avgLine={sAvg}
-          height={100}
-          colorFn={(d) => d.avg >= sAvg ? `${COLORS.green}50` : `${COLORS.red}35`}
-          formatLabel={(d) => `GW${d.gw}`}
-          formatValue={(d) => `${d.avg.toFixed(1)} pts`}
-        />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>AVERAGE MANAGER SCORE BY GW</div>
+          <div style={{ display: "flex", gap: 12, fontSize: 9 }}>
+            <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: `${COLORS.green}70`, marginRight: 4, verticalAlign: "middle" }} />All Managers</span>
+            <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, background: COLORS.blue, marginRight: 4, verticalAlign: "middle" }} />Top 100{top100kAvgs ? "" : " (loading...)"}</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 120, paddingTop: 18 }}>
+          {gwA.map((g) => {
+            const topAvg = top100kAvgs?.[g.gw];
+            const allVals = [...gwA.map((x) => x.avg), ...(top100kAvgs ? Object.values(top100kAvgs) : [])];
+            const mx = Math.max(...allVals, 1);
+            return (
+              <div key={g.gw} style={{ flex: 1, minWidth: 0, display: "flex", gap: 1, alignItems: "flex-end" }}>
+                {/* All managers bar */}
+                <div
+                  title={`GW${g.gw} All: ${g.avg.toFixed(1)} pts`}
+                  style={{
+                    flex: 1, height: Math.max((g.avg / mx) * 100, 3),
+                    background: g.avg >= sAvg ? `${COLORS.green}50` : `${COLORS.red}35`,
+                    borderRadius: "2px 2px 0 0",
+                    cursor: "pointer",
+                  }}
+                />
+                {/* Top 100K bar */}
+                <div
+                  title={topAvg ? `GW${g.gw} Top 100: ${topAvg} pts` : `GW${g.gw} Top 100: loading...`}
+                  style={{
+                    flex: 1, height: topAvg ? Math.max((topAvg / mx) * 100, 3) : 0,
+                    background: COLORS.blue,
+                    borderRadius: "2px 2px 0 0",
+                    opacity: topAvg ? 0.7 : 0,
+                    cursor: "pointer",
+                    transition: "height 0.3s ease, opacity 0.3s ease",
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ height: 1, background: `${COLORS.amber}50`, marginBottom: 6 }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW1</span>
-          <span style={{ fontSize: 10, color: COLORS.amber }}>Avg: {sAvg.toFixed(1)}</span>
+          <span style={{ fontSize: 10, color: COLORS.amber }}>All Avg: {sAvg.toFixed(1)}</span>
           <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW{gwA.length}</span>
         </div>
       </Card>
