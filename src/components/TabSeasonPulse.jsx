@@ -1,8 +1,27 @@
+import { useState, useEffect } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
 import { Card, StatCard, PulseRating } from "./shared";
+import { fetchClaudeInsight, buildPulseSummaryPrompt } from "../utils/claude";
 
 export default function TabSeasonPulse({ data }) {
   const { pr, sAvg, r3, flagged, gwA, pM, tpl, tH, capHitRate, dgwTeams, bgwTeams, gw } = data;
+  const [aiSummary, setAiSummary] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchSummary = async () => {
+      setAiLoading(true);
+      const prompt = buildPulseSummaryPrompt(data);
+      const text = await fetchClaudeInsight("pulse_summary", prompt, `gw${gw}`);
+      if (!cancelled) {
+        setAiSummary(text);
+        setAiLoading(false);
+      }
+    };
+    fetchSummary();
+    return () => { cancelled = true; };
+  }, [gw]);
 
   const hasDGW = Object.keys(dgwTeams).some((g) => +g === gw);
   const hasBGW = Object.keys(bgwTeams).some((g) => +g === gw);
@@ -29,6 +48,20 @@ export default function TabSeasonPulse({ data }) {
           Season avg: {sAvg.toFixed(1)} pts · Last 3 GWs: {r3.toFixed(1)} pts
           {flagged.length > 0 ? ` · ${flagged.length} premium${flagged.length > 1 ? "s" : ""} flagged` : " · No premium flags"}
         </p>
+        {/* Claude AI Pulse Summary */}
+        {(aiLoading || aiSummary) && (
+          <div style={{ marginTop: 16, padding: "14px 20px", background: `${COLORS.blue}08`, border: `1px solid ${COLORS.blue}20`, borderRadius: 10, maxWidth: 600, margin: "16px auto 0" }}>
+            <div style={{ fontSize: 9, letterSpacing: 2, color: COLORS.blue, fontWeight: 700, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.blue, display: "inline-block" }} />
+              CLAUDE AI PULSE
+            </div>
+            {aiLoading && !aiSummary ? (
+              <div style={{ fontSize: 12, color: COLORS.textMuted, fontStyle: "italic" }}>Generating GW{gw} briefing...</div>
+            ) : (
+              <div style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.7 }}>{aiSummary}</div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Scoring Environment */}

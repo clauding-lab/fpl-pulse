@@ -1,10 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
 import { Card } from "./shared";
 import { playerPhotoUrl } from "../utils/api";
+import { fetchClaudeInsight, buildScoutingNotePrompt } from "../utils/claude";
 
 export default function TabHiddenGems({ data }) {
   const [copied, setCopied] = useState(false);
+  const [scoutNotes, setScoutNotes] = useState({});
+
+  // Fetch scouting notes for top 5 gems
+  useEffect(() => {
+    let cancelled = false;
+    const fetchNotes = async () => {
+      const top5 = data.gems.slice(0, 5);
+      for (const p of top5) {
+        if (cancelled) break;
+        const prompt = buildScoutingNotePrompt(p);
+        const text = await fetchClaudeInsight("scouting_note", prompt, `gem-${p.id}-gw${data.gw}`);
+        if (!cancelled && text) {
+          setScoutNotes((prev) => ({ ...prev, [p.id]: text }));
+        }
+      }
+    };
+    fetchNotes();
+    return () => { cancelled = true; };
+  }, [data.gw]);
 
   const generateThread = () => {
     const top5 = data.gems.slice(0, 5);
@@ -81,6 +101,16 @@ export default function TabHiddenGems({ data }) {
                   </div>
                 </div>
               </div>
+              {/* Claude AI Scouting Note */}
+              {scoutNotes[p.id] && (
+                <div style={{ marginTop: 12, padding: "10px 12px", background: `${COLORS.blue}08`, border: `1px solid ${COLORS.blue}15`, borderRadius: 8 }}>
+                  <div style={{ fontSize: 8, letterSpacing: 1.5, color: COLORS.blue, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ width: 4, height: 4, borderRadius: "50%", background: COLORS.blue, display: "inline-block" }} />
+                    SCOUT NOTE
+                  </div>
+                  <div style={{ fontSize: 11, color: COLORS.textSecondary, lineHeight: 1.6 }}>{scoutNotes[p.id]}</div>
+                </div>
+              )}
             </Card>
           );
         })}
