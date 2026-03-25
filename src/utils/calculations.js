@@ -228,7 +228,7 @@ export function computeAll(apiData) {
     .filter(Boolean);
 
   return {
-    gw, gwA, sAvg, r3, tRR, tm, pl, plMap, tpl, tH, pM, flagged, pr, fPl, gems, hh, fk, risk,
+    gw, lastFinishedGW, gwA, sAvg, r3, tRR, tm, pl, plMap, tpl, tH, pM, flagged, pr, fPl, gems, hh, fk, risk,
     dgwTeams, bgwTeams, capHitRate, uf,
   };
 }

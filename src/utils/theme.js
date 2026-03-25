@@ -1,4 +1,4 @@
-export const COLORS = {
+const DARK = {
   bg: "#0a0e17",
   surface: "#131a2b",
   border: "#1e2a42",
@@ -15,6 +15,23 @@ export const COLORS = {
   fdr4: "#f87171",
   fdr5: "#ff2882",
 };
+
+const LIGHT_OVERRIDES = {
+  bg: "#f8fafc",
+  surface: "#ffffff",
+  border: "#e2e8f0",
+  text: "#0f172a",
+  textSecondary: "#64748b",
+  textMuted: "#94a3b8",
+};
+
+// Mutable COLORS object — toggled by setThemeMode()
+export const COLORS = { ...DARK };
+
+export function setThemeMode(isDark) {
+  const src = isDark ? DARK : { ...DARK, ...LIGHT_OVERRIDES };
+  Object.assign(COLORS, src);
+}
 
 export const FDR_COLORS = {
   1: COLORS.fdr1,

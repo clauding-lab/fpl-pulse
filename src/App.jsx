@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { COLORS } from "./utils/theme";
+import { useState, useCallback } from "react";
+import { COLORS, setThemeMode } from "./utils/theme";
 import { useFplData } from "./hooks/useFplData";
 import { TabBtn } from "./components/shared";
 import TabSeasonPulse from "./components/TabSeasonPulse";
@@ -7,11 +7,6 @@ import TabFixtureEngine from "./components/TabFixtureEngine";
 import TabPlayerIntel from "./components/TabPlayerIntel";
 import TabHiddenGems from "./components/TabHiddenGems";
 import TabMyPulse from "./components/TabMyPulse";
-
-const LIGHT = {
-  bg: "#f8fafc", surface: "#ffffff", border: "#e2e8f0",
-  text: "#0f172a", textSecondary: "#64748b", textMuted: "#94a3b8",
-};
 
 const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Hidden Gems", "My Pulse"];
 
@@ -54,16 +49,17 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const { loading, usingMock, data } = useFplData();
 
-  const theme = useMemo(() => {
-    if (darkMode) return COLORS;
-    return { ...COLORS, ...LIGHT };
+  const toggleTheme = useCallback(() => {
+    const next = !darkMode;
+    setDarkMode(next);
+    setThemeMode(next);
   }, [darkMode]);
 
   if (loading) return <LoadingScreen />;
   if (!data) return null;
 
   return (
-    <div style={{ background: theme.bg, minHeight: "100vh", color: theme.text, fontFamily: "'Outfit', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
+    <div style={{ background: COLORS.bg, minHeight: "100vh", color: COLORS.text, fontFamily: "'Outfit', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
       {/* Header */}
@@ -109,7 +105,7 @@ export default function App() {
               GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>} · Built by Adnan Rashid
             </div>
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               style={{
                 background: "transparent",
                 border: `1px solid ${COLORS.border}`,

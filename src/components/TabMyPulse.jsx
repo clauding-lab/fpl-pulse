@@ -101,7 +101,7 @@ export default function TabMyPulse({ data }) {
     if (!teamId.trim()) return;
     setLoading(true);
     setError(null);
-    const result = await fetchSquad(teamId.trim(), data.gw);
+    const result = await fetchSquad(teamId.trim(), data.lastFinishedGW || data.gw);
     if (!result) {
       setError("Could not fetch squad. Check your Team ID and try again.");
       setLoading(false);
