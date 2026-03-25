@@ -121,6 +121,40 @@ export default function TabSeasonPulse({ data }) {
     return () => { cancelled = true; };
   }, [glance.gw]);
 
+  // DEFCON: fetch actual per-game FPL pts for top 30 candidates
+  const [dcData, setDcData] = useState(null);
+  const [dcLoading, setDcLoading] = useState(false);
+
+  useEffect(() => {
+    if (!defcon.length) return;
+    let cancelled = false;
+    const cacheKey = `fpl_defcon_detail_gw${glance.gw}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) { setDcData(JSON.parse(cached)); return; }
+
+    const top30Ids = defcon.slice(0, 30).map((p) => p.id).join(",");
+    setDcLoading(true);
+    fetch(`/api/defcon-detail?ids=${top30Ids}`)
+      .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
+      .then((d) => {
+        if (!cancelled) {
+          setDcData(d.players);
+          sessionStorage.setItem(cacheKey, JSON.stringify(d.players));
+        }
+      })
+      .catch(() => { /* silently fail — table still works with raw defCon */ })
+      .finally(() => { if (!cancelled) setDcLoading(false); });
+    return () => { cancelled = true; };
+  }, [defcon, glance.gw]);
+
+  // Merge actual FPL pts into defcon list and sort by dcFplPts
+  const defconMerged = defcon.slice(0, 30).map((p) => {
+    const detail = dcData?.find((d) => d.id === p.id);
+    return detail
+      ? { ...p, dcFplPts: detail.dcFplPts, gamesHit: detail.gamesHit, gamesPlayed: detail.gamesPlayed, hitRate: detail.hitRate }
+      : p;
+  }).sort((a, b) => (b.dcFplPts ?? -1) - (a.dcFplPts ?? -1));
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
@@ -199,9 +233,16 @@ export default function TabSeasonPulse({ data }) {
 
       {/* Panel 4: DEFCON Leaders */}
       <Card>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>DEFCON LEADERS — DEFENSIVE CONTRIBUTION</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>DEFCON LEADERS — DEFENSIVE CONTRIBUTION</div>
+          {dcLoading && <div style={{ fontSize: 9, color: COLORS.blue }}>Loading per-game data...</div>}
+          {dcData && <div style={{ fontSize: 9, color: COLORS.textMuted }}>Sorted by actual FPL pts from DefCon</div>}
+        </div>
+        <div style={{ fontSize: 9, color: COLORS.textMuted, marginBottom: 10 }}>
+          DEF/GK: 10+ defensive actions per game = 2 FPL pts · MID/FWD: 12+ = 2 FPL pts (capped at 2/game)
+        </div>
         <PlayerTable
-          players={defcon.slice(0, 15)}
+          players={defconMerged.slice(0, 15)}
           columns={[
             { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
             { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
@@ -209,10 +250,21 @@ export default function TabSeasonPulse({ data }) {
             { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
             { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
             { header: "Pts", render: (p) => p.pts, style: () => ({ fontWeight: 700 }) },
+            {
+              header: "DC Pts",
+              render: (p) => p.dcFplPts !== null ? p.dcFplPts : "—",
+              style: (p) => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace", fontSize: 13 }),
+              title: "Actual FPL points earned from defensive contributions (2 or 0 per game)"
+            },
+            {
+              header: "Hit%",
+              render: (p) => p.hitRate !== undefined ? `${p.hitRate}%` : "—",
+              style: (p) => ({ color: (p.hitRate || 0) >= 60 ? COLORS.green : (p.hitRate || 0) >= 40 ? COLORS.amber : COLORS.textSecondary }),
+              title: "% of games where DefCon threshold was hit"
+            },
+            { header: "DefCon", render: (p) => p.defCon, style: () => ({ fontFamily: "monospace", color: COLORS.blue }), title: "Raw cumulative defensive contribution stat" },
+            { header: "DC/90", render: (p) => p.defCon90, style: () => ({ fontFamily: "monospace", color: COLORS.textSecondary }), title: "Defensive contribution per 90 mins" },
             { header: "CS", render: (p) => p.cs, style: () => ({ fontWeight: 600 }) },
-            { header: "CS%", render: (p) => `${(p.csRate * 100).toFixed(0)}%`, style: (p) => ({ color: p.csRate >= 0.35 ? COLORS.green : COLORS.textSecondary }) },
-            { header: "DefCon", render: (p) => p.defCon, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }), title: "Defensive Contribution FPL pts (max 2/game)" },
-            { header: "DC/90", render: (p) => p.defCon90, style: () => ({ fontFamily: "monospace", color: COLORS.blue }), title: "Defensive Contribution per 90 mins" },
             { header: "Form", render: (p) => p.form, style: (p) => ({ fontWeight: 700, color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red }) },
             {
               header: "Next 3",

@@ -189,12 +189,15 @@ export function computeAll(apiData) {
   };
 
   // --- Panel 2: DEFCON Leaders ---
-  // Uses the real FPL API field: defensive_contribution (max 2 pts/game for hitting tackle/block/interception thresholds)
+  // FPL rules: DEF/GK need 10 CBIT per game for 2 FPL pts; MID/FWD need 12 CBIRT for 2 FPL pts (capped at 2/game)
+  // defensive_contribution from bootstrap = raw cumulative stat count
+  // Actual FPL pts fetched from /api/defcon-detail (per-game element-summary)
   const defcon = pl
     .filter((p) => p.mins >= 1500 && p.defCon > 0)
     .map((p) => {
       const csRate = p.apps > 0 ? +(p.cs / p.apps).toFixed(2) : 0;
-      return { ...p, csRate };
+      const threshold = (p.pos === 1 || p.pos === 2) ? 10 : 12;
+      return { ...p, csRate, threshold, dcFplPts: null }; // null = fetched async
     })
     .sort((a, b) => b.defCon - a.defCon);
 
