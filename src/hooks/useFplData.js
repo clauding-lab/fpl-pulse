@@ -4,8 +4,8 @@ import { computeAll } from "../utils/calculations";
 
 // Use our own Vercel serverless proxy — no third-party CORS proxy needed
 const FPL_PROXY = "/api/fpl?endpoint=";
-const CACHE_KEY = "fpl_pulse_data";
-const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+const CACHE_KEY = "fpl_pulse_v2"; // bumped to bust stale GW31 cache
+const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
 function getCached() {
   try {

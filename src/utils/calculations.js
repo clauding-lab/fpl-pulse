@@ -5,8 +5,12 @@ const RUN_WEIGHTS = [0.25, 0.20, 0.16, 0.13, 0.10, 0.07, 0.05, 0.04];
 export function computeAll(apiData) {
   const { bootstrap: d, fixtures: fx } = apiData;
 
-  const cGW = d.events.find((e) => e.is_current) || d.events[d.events.length - 1];
+  // Use is_next (upcoming GW) for forward-looking analysis; fall back to is_current, then last GW
+  const nextGW = d.events.find((e) => e.is_next);
+  const currentGW = d.events.find((e) => e.is_current);
+  const cGW = nextGW || currentGW || d.events[d.events.length - 1];
   const gw = cGW?.id || 1;
+  const lastFinishedGW = currentGW?.finished ? currentGW.id : (currentGW?.id || 1) - 1;
 
   const done = d.events.filter((e) => e.finished);
   const gwA = done.map((e) => ({ gw: e.id, avg: e.average_entry_score || 0 }));
