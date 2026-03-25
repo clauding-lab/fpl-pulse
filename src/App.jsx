@@ -1,0 +1,162 @@
+import { useState, useMemo } from "react";
+import { COLORS } from "./utils/theme";
+import { useFplData } from "./hooks/useFplData";
+import { TabBtn } from "./components/shared";
+import TabSeasonPulse from "./components/TabSeasonPulse";
+import TabFixtureEngine from "./components/TabFixtureEngine";
+import TabPlayerIntel from "./components/TabPlayerIntel";
+import TabHiddenGems from "./components/TabHiddenGems";
+import TabMyPulse from "./components/TabMyPulse";
+
+const LIGHT = {
+  bg: "#f8fafc", surface: "#ffffff", border: "#e2e8f0",
+  text: "#0f172a", textSecondary: "#64748b", textMuted: "#94a3b8",
+};
+
+const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Hidden Gems", "My Pulse"];
+
+function LoadingScreen() {
+  return (
+    <div
+      style={{
+        background: COLORS.bg,
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: 16,
+        color: COLORS.textSecondary,
+      }}
+    >
+      <div style={{ display: "flex", gap: 6 }}>
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: COLORS.green,
+              animation: `pd 1.2s ease ${i * 0.2}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+      <div style={{ fontSize: 13 }}>Loading FPL data...</div>
+      <style>{`@keyframes pd{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}`}</style>
+    </div>
+  );
+}
+
+export default function App() {
+  const [tab, setTab] = useState(0);
+  const [darkMode, setDarkMode] = useState(true);
+  const { loading, usingMock, data } = useFplData();
+
+  const theme = useMemo(() => {
+    if (darkMode) return COLORS;
+    return { ...COLORS, ...LIGHT };
+  }, [darkMode]);
+
+  if (loading) return <LoadingScreen />;
+  if (!data) return null;
+
+  return (
+    <div style={{ background: theme.bg, minHeight: "100vh", color: theme.text, fontFamily: "'Outfit', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+      {/* Header */}
+      <div style={{ borderBottom: `1px solid ${COLORS.border}`, padding: "14px 20px" }}>
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: COLORS.green,
+                boxShadow: `0 0 12px ${COLORS.green}60`,
+              }}
+            />
+            <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5 }}>FPL PULSE</span>
+            <span
+              style={{
+                fontSize: 9,
+                color: COLORS.bg,
+                background: COLORS.amber,
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontWeight: 700,
+                letterSpacing: 1,
+              }}
+            >
+              BETA
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 11, color: COLORS.textSecondary }}>
+              GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>} · Built by Adnan Rashid
+            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              style={{
+                background: "transparent",
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 6,
+                padding: "4px 8px",
+                cursor: "pointer",
+                fontSize: 14,
+                lineHeight: 1,
+              }}
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode ? "☀️" : "🌙"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{ borderBottom: `1px solid ${COLORS.border}`, padding: "6px 20px", overflowX: "auto" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 4 }}>
+          {TABS.map((t, i) => (
+            <TabBtn key={i} label={t} active={tab === i} onClick={() => setTab(i)} />
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 40px" }}>
+        {tab === 0 && <TabSeasonPulse data={data} />}
+        {tab === 1 && <TabFixtureEngine data={data} />}
+        {tab === 2 && <TabPlayerIntel data={data} />}
+        {tab === 3 && <TabHiddenGems data={data} />}
+        {tab === 4 && <TabMyPulse data={data} />}
+      </div>
+
+      {/* Footer */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 40px" }}>
+        <div style={{ paddingTop: 20, borderTop: `1px solid ${COLORS.border}`, textAlign: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.green }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textSecondary }}>FPL PULSE</span>
+          </div>
+          <div style={{ fontSize: 11, color: COLORS.textMuted }}>
+            Built by Adnan Rashid · Powered by Claude AI · Data from Fantasy Premier League API
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
