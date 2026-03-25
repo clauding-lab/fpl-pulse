@@ -140,7 +140,64 @@ export default function TabSeasonPulse({ data }) {
         </div>
       </Card>
 
-      {/* Panel 2: DEFCON Leaders */}
+      {/* Panel 2: Template Tracker — Pitch Formation */}
+      <Card>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>TEMPLATE TRACKER</div>
+          <div style={{ fontSize: 12, color: COLORS.amber, fontWeight: 700 }}>{tH.toFixed(1)} avg form</div>
+        </div>
+        <PitchFormation tpl={tpl} />
+        <div style={{ textAlign: "center", marginTop: 12, fontSize: 10, color: COLORS.textMuted }}>
+          FPL Pulse · @adnanrashid
+        </div>
+      </Card>
+
+      {/* Panel 3: Price Movers */}
+      <Card>
+        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>PRICE MOVERS</div>
+        <SideBySide
+          left={
+            <>
+              <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.green, marginBottom: 8 }}>Risers ▲</div>
+              {risers.length === 0 ? (
+                <div style={{ fontSize: 12, color: COLORS.textMuted, padding: 12 }}>No price rises this GW</div>
+              ) : (
+                risers.map((p) => (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${COLORS.border}` }}>
+                    <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9, width: 24 }}>{p.posL}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{p.name}</span>
+                    <span style={{ fontSize: 11, color: COLORS.textSecondary }}>{p.team}</span>
+                    <span style={{ fontSize: 12, fontFamily: "monospace", fontWeight: 600 }}>£{p.price}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.green }}>+{(p.pChg / 10).toFixed(1)}</span>
+                    <span style={{ fontSize: 10, color: COLORS.textMuted }}>{p.own}%</span>
+                  </div>
+                ))
+              )}
+            </>
+          }
+          right={
+            <>
+              <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.red, marginBottom: 8 }}>Fallers ▼</div>
+              {fallers.length === 0 ? (
+                <div style={{ fontSize: 12, color: COLORS.textMuted, padding: 12 }}>No price drops this GW</div>
+              ) : (
+                fallers.map((p) => (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${COLORS.border}` }}>
+                    <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9, width: 24 }}>{p.posL}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{p.name}</span>
+                    <span style={{ fontSize: 11, color: COLORS.textSecondary }}>{p.team}</span>
+                    <span style={{ fontSize: 12, fontFamily: "monospace", fontWeight: 600 }}>£{p.price}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.red }}>{(p.pChg / 10).toFixed(1)}</span>
+                    <span style={{ fontSize: 10, color: COLORS.textMuted }}>{p.own}%</span>
+                  </div>
+                ))
+              )}
+            </>
+          }
+        />
+      </Card>
+
+      {/* Panel 4: DEFCON Leaders */}
       <Card>
         <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>DEFCON LEADERS — DEFENSIVE CONTRIBUTION</div>
         <PlayerTable
@@ -174,7 +231,7 @@ export default function TabSeasonPulse({ data }) {
         </div>
       </Card>
 
-      {/* Panel 3: Best Value */}
+      {/* Panel 5: Best Value */}
       <Card>
         <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>BEST VALUE — POINTS PER MILLION</div>
         <SideBySide
@@ -328,62 +385,6 @@ export default function TabSeasonPulse({ data }) {
         </div>
       </Card>
 
-      {/* Panel 6: Template Tracker — Pitch Formation */}
-      <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>TEMPLATE TRACKER</div>
-          <div style={{ fontSize: 12, color: COLORS.amber, fontWeight: 700 }}>{tH.toFixed(1)} avg form</div>
-        </div>
-        <PitchFormation tpl={tpl} />
-        <div style={{ textAlign: "center", marginTop: 12, fontSize: 10, color: COLORS.textMuted }}>
-          FPL Pulse · @adnanrashid
-        </div>
-      </Card>
-
-      {/* Panel 7: Price Movers */}
-      <Card>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>PRICE MOVERS</div>
-        <SideBySide
-          left={
-            <>
-              <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.green, marginBottom: 8 }}>Risers ▲</div>
-              {risers.length === 0 ? (
-                <div style={{ fontSize: 12, color: COLORS.textMuted, padding: 12 }}>No price rises this GW</div>
-              ) : (
-                risers.map((p) => (
-                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${COLORS.border}` }}>
-                    <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9, width: 24 }}>{p.posL}</span>
-                    <span style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{p.name}</span>
-                    <span style={{ fontSize: 11, color: COLORS.textSecondary }}>{p.team}</span>
-                    <span style={{ fontSize: 12, fontFamily: "monospace", fontWeight: 600 }}>£{p.price}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.green }}>+{(p.pChg / 10).toFixed(1)}</span>
-                    <span style={{ fontSize: 10, color: COLORS.textMuted }}>{p.own}%</span>
-                  </div>
-                ))
-              )}
-            </>
-          }
-          right={
-            <>
-              <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.red, marginBottom: 8 }}>Fallers ▼</div>
-              {fallers.length === 0 ? (
-                <div style={{ fontSize: 12, color: COLORS.textMuted, padding: 12 }}>No price drops this GW</div>
-              ) : (
-                fallers.map((p) => (
-                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: `1px solid ${COLORS.border}` }}>
-                    <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9, width: 24 }}>{p.posL}</span>
-                    <span style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{p.name}</span>
-                    <span style={{ fontSize: 11, color: COLORS.textSecondary }}>{p.team}</span>
-                    <span style={{ fontSize: 12, fontFamily: "monospace", fontWeight: 600 }}>£{p.price}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.red }}>{(p.pChg / 10).toFixed(1)}</span>
-                    <span style={{ fontSize: 10, color: COLORS.textMuted }}>{p.own}%</span>
-                  </div>
-                ))
-              )}
-            </>
-          }
-        />
-      </Card>
     </div>
   );
 }
