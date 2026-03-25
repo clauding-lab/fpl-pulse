@@ -99,6 +99,26 @@ export default function TabMyPulse({ data }) {
   const shareRef = useRef(null);
   const [exporting, setExporting] = useState(false);
 
+  const handleShare = useCallback(async () => {
+    if (!shareRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(shareRef.current, {
+        backgroundColor: COLORS.bg,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement("a");
+      link.download = `fpl-pulse-squad-GW${data.gw}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (err) {
+      console.error("Share export failed:", err);
+    }
+    setExporting(false);
+  }, [data.gw]);
+
   const handleFetch = async () => {
     if (!teamId.trim()) return;
     setLoading(true);
@@ -148,26 +168,6 @@ export default function TabMyPulse({ data }) {
   const { squad, healthScore, weakest, replacement, bestXI, capPick, vicePick, chips } = analysis;
   const starters = squad.filter((p) => !p.isBench);
   const bench = squad.filter((p) => p.isBench);
-
-  const handleShare = useCallback(async () => {
-    if (!shareRef.current) return;
-    setExporting(true);
-    try {
-      const canvas = await html2canvas(shareRef.current, {
-        backgroundColor: COLORS.bg,
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-      const link = document.createElement("a");
-      link.download = `fpl-pulse-gw${data.gw}-${managerName.replace(/\s+/g, "-").toLowerCase()}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch (err) {
-      console.error("Export failed:", err);
-    }
-    setExporting(false);
-  }, [data.gw, managerName]);
 
   return (
     <div>
