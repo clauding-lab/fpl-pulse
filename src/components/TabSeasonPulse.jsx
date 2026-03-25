@@ -153,10 +153,9 @@ export default function TabSeasonPulse({ data }) {
             { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
             { header: "CS", render: (p) => p.cs, style: () => ({ fontWeight: 600 }) },
             { header: "CS%", render: (p) => `${(p.csRate * 100).toFixed(0)}%`, style: (p) => ({ color: p.csRate >= 0.35 ? COLORS.green : COLORS.textSecondary }) },
-            { header: "BPS/90", render: (p) => p.bps90, style: () => ({ fontFamily: "monospace", color: COLORS.blue }) },
-            { header: "Bon/App", render: (p) => p.bonusPerApp, style: () => ({ fontFamily: "monospace", color: COLORS.amber }) },
+            { header: "DefCon", render: (p) => p.defCon, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }), title: "Defensive Contribution pts (max 2/game)" },
+            { header: "DC/90", render: (p) => p.defCon90, style: () => ({ fontFamily: "monospace", color: COLORS.blue }), title: "Defensive Contribution per 90 mins" },
             { header: "Form", render: (p) => p.form, style: (p) => ({ fontWeight: 700, color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red }) },
-            { header: "DEFCON", render: (p) => p.defcon, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }) },
             {
               header: "Next 3",
               render: (p) => {

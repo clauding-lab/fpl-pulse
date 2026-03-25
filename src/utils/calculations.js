@@ -148,6 +148,8 @@ export function computeAll(apiData) {
       yc: p.yellow_cards || 0,
       code: p.code,
       cs, fR, aFDR,
+      defCon: p.defensive_contribution || 0,
+      defCon90: parseFloat(p.defensive_contribution_per_90) || 0,
       apps: Math.max(Math.floor(m / 45), 1),
       fScore: +(form * 0.35 + xGI90 * 2.5 + bps90 * 0.005 + fR * 2 + ppg * 0.3).toFixed(2),
     };
@@ -187,18 +189,14 @@ export function computeAll(apiData) {
   };
 
   // --- Panel 2: DEFCON Leaders ---
+  // Uses the real FPL API field: defensive_contribution (max 2 pts/game for hitting tackle/block/interception thresholds)
   const defcon = pl
     .filter((p) => (p.pos === 1 || p.pos === 2) && p.mins >= 1500)
     .map((p) => {
-      const bonusPerApp = p.apps > 0 ? +(p.bonus / p.apps).toFixed(2) : 0;
       const csRate = p.apps > 0 ? +(p.cs / p.apps).toFixed(2) : 0;
-      const raw = bonusPerApp * 0.35 + p.bps90 * 0.0025 + csRate * 0.25 + p.form * 0.15;
-      return { ...p, bonusPerApp, csRate, defconRaw: raw };
+      return { ...p, csRate };
     })
-    .sort((a, b) => b.defconRaw - a.defconRaw);
-  // Normalize to 0-10
-  const maxDR = defcon[0]?.defconRaw || 1;
-  defcon.forEach((p) => { p.defcon = +(p.defconRaw / maxDR * 10).toFixed(1); });
+    .sort((a, b) => b.defCon - a.defCon);
 
   // --- Panel 3: Best Value ---
   const valueAll = pl.filter((p) => p.mins > 900 && +p.price > 0);
