@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { generateMockData } from "../utils/mockData";
 import { computeAll } from "../utils/calculations";
 
-const CORS_PROXY = "https://corsproxy.io/?url=";
-const BASE = "https://fantasy.premierleague.com/api";
+// Use our own Vercel serverless proxy — no third-party CORS proxy needed
+const FPL_PROXY = "/api/fpl?endpoint=";
 const CACHE_KEY = "fpl_pulse_data";
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
@@ -44,8 +44,8 @@ export function useFplData() {
 
       try {
         const [b, f] = await Promise.all([
-          fetch(`${CORS_PROXY}${encodeURIComponent(`${BASE}/bootstrap-static/`)}`),
-          fetch(`${CORS_PROXY}${encodeURIComponent(`${BASE}/fixtures/`)}`),
+          fetch(`${FPL_PROXY}bootstrap-static/`),
+          fetch(`${FPL_PROXY}fixtures/`),
         ]);
         if (!b.ok || !f.ok) throw new Error("API fetch failed");
         const data = { bootstrap: await b.json(), fixtures: await f.json(), isMock: false };

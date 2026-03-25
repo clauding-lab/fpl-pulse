@@ -1,12 +1,12 @@
-const CORS_PROXY = "https://corsproxy.io/?url=";
-const BASE = "https://fantasy.premierleague.com/api";
+// Use our own Vercel serverless proxy — no third-party CORS proxy needed
+const FPL_PROXY = "/api/fpl?endpoint=";
 
 const summaryCache = {};
 
 export async function fetchPlayerSummary(playerId) {
   if (summaryCache[playerId]) return summaryCache[playerId];
   try {
-    const r = await fetch(`${CORS_PROXY}${encodeURIComponent(`${BASE}/element-summary/${playerId}/`)}`);
+    const r = await fetch(`${FPL_PROXY}element-summary/${playerId}/`);
     if (!r.ok) throw new Error();
     const data = await r.json();
     summaryCache[playerId] = data;
@@ -19,8 +19,8 @@ export async function fetchPlayerSummary(playerId) {
 export async function fetchSquad(teamId, gw) {
   try {
     const [picksR, entryR] = await Promise.all([
-      fetch(`${CORS_PROXY}${encodeURIComponent(`${BASE}/entry/${teamId}/event/${gw}/picks/`)}`),
-      fetch(`${CORS_PROXY}${encodeURIComponent(`${BASE}/entry/${teamId}/`)}`),
+      fetch(`${FPL_PROXY}entry/${teamId}/event/${gw}/picks/`),
+      fetch(`${FPL_PROXY}entry/${teamId}/`),
     ]);
     if (!picksR.ok || !entryR.ok) throw new Error();
     return { picks: await picksR.json(), entry: await entryR.json() };
