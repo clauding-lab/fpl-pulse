@@ -208,9 +208,10 @@ export default function TabSeasonPulse({ data }) {
             { header: "Pos", render: (p) => <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 10 }}>{p.posL}</span> },
             { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
             { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
+            { header: "Pts", render: (p) => p.pts, style: () => ({ fontWeight: 700 }) },
             { header: "CS", render: (p) => p.cs, style: () => ({ fontWeight: 600 }) },
             { header: "CS%", render: (p) => `${(p.csRate * 100).toFixed(0)}%`, style: (p) => ({ color: p.csRate >= 0.35 ? COLORS.green : COLORS.textSecondary }) },
-            { header: "DefCon", render: (p) => p.defCon, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }), title: "Defensive Contribution pts (max 2/game)" },
+            { header: "DefCon", render: (p) => p.defCon, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }), title: "Defensive Contribution FPL pts (max 2/game)" },
             { header: "DC/90", render: (p) => p.defCon90, style: () => ({ fontFamily: "monospace", color: COLORS.blue }), title: "Defensive Contribution per 90 mins" },
             { header: "Form", render: (p) => p.form, style: (p) => ({ fontWeight: 700, color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red }) },
             {
