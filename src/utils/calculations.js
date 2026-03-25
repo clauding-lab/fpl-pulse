@@ -191,7 +191,7 @@ export function computeAll(apiData) {
   // --- Panel 2: DEFCON Leaders ---
   // Uses the real FPL API field: defensive_contribution (max 2 pts/game for hitting tackle/block/interception thresholds)
   const defcon = pl
-    .filter((p) => (p.pos === 1 || p.pos === 2) && p.mins >= 1500)
+    .filter((p) => p.mins >= 1500 && p.defCon > 0)
     .map((p) => {
       const csRate = p.apps > 0 ? +(p.cs / p.apps).toFixed(2) : 0;
       return { ...p, csRate };
