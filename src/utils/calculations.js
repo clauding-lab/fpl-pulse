@@ -65,24 +65,43 @@ export function computeAll(apiData) {
   });
 
   // Compute team-level xG and xGC for Attack/Defense Run ratings
-  const teamXG = {};
-  const teamXGC = {};
-  d.teams.forEach((t) => { teamXG[t.id] = { xg: 0, mins: 0 }; teamXGC[t.id] = { xgc: 0, mins: 0 }; });
+  // xG: sum of all players' expected_goals = team total xG for the season
+  // xGC: use expected_goals_conceded from ONE player per team (e.g. highest-mins player)
+  //       since xGC is the same for all players on the pitch in a given match
+  const teamXGtotals = {};
+  const teamXGCtotals = {};
+  d.teams.forEach((t) => { teamXGtotals[t.id] = 0; teamXGCtotals[t.id] = { xgc: 0, mins: 0 }; });
   d.elements.forEach((p) => {
     const m = p.minutes || 0;
     if (m < 90) return;
-    const xg = parseFloat(p.expected_goals) || 0;
-    const xgc = parseFloat(p.expected_goals_conceded) || 0;
-    teamXG[p.team].xg += xg;
-    teamXG[p.team].mins += m;
-    teamXGC[p.team].xgc += xgc;
-    teamXGC[p.team].mins += m;
+    teamXGtotals[p.team] += parseFloat(p.expected_goals) || 0;
   });
+  // For xGC, pick the player with most minutes per team (their xGC = team xGC)
+  const teamTopPlayer = {};
+  d.elements.forEach((p) => {
+    const m = p.minutes || 0;
+    if (!teamTopPlayer[p.team] || m > teamTopPlayer[p.team].minutes) {
+      teamTopPlayer[p.team] = p;
+    }
+  });
+  d.teams.forEach((t) => {
+    const top = teamTopPlayer[t.id];
+    if (top) {
+      teamXGCtotals[t.id] = { xgc: parseFloat(top.expected_goals_conceded) || 0, mins: top.minutes || 0 };
+    }
+  });
+
+  // Calculate per-90 rates
+  // Team matches played ≈ finished GWs (each team plays ~1 game per GW)
+  const matchesPlayed = done.length || 1;
   const teamXGper90 = {};
   const teamXGCper90 = {};
   d.teams.forEach((t) => {
-    teamXGper90[t.id] = teamXG[t.id].mins > 0 ? (teamXG[t.id].xg / teamXG[t.id].mins) * 90 : 1.2;
-    teamXGCper90[t.id] = teamXGC[t.id].mins > 0 ? (teamXGC[t.id].xgc / teamXGC[t.id].mins) * 90 * 11 : 1.2;
+    // xG per 90: total team xG / matches played (already team-level sum)
+    teamXGper90[t.id] = +(teamXGtotals[t.id] / matchesPlayed).toFixed(2);
+    // xGC per 90: from top player's xGC (= team xGC) / their 90s played
+    const xgcD = teamXGCtotals[t.id];
+    teamXGCper90[t.id] = xgcD.mins > 0 ? +((xgcD.xgc / xgcD.mins) * 90).toFixed(2) : 1.2;
   });
 
   // Team Run Ratings with swing detection + attack/defense run
