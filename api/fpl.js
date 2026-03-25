@@ -29,7 +29,8 @@ export default async function handler(req, res) {
   const isAllowed = allowed.some((a) => endpoint === a) ||
     /^element-summary\/\d+\/$/.test(endpoint) ||
     /^entry\/\d+\/event\/\d+\/picks\/$/.test(endpoint) ||
-    /^entry\/\d+\/$/.test(endpoint);
+    /^entry\/\d+\/$/.test(endpoint) ||
+    /^leagues-classic\/\d+\/standings\//.test(endpoint);
 
   if (!isAllowed) {
     return res.status(403).json({ error: "Endpoint not allowed" });

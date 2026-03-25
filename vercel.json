@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/smart-money.js": {
+      "maxDuration": 60
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { COLORS, POS_COLORS, FDR_COLORS, FDR_TEXT } from "../utils/theme";
 import { Card, PlayerTable } from "./shared";
 
@@ -100,6 +101,26 @@ function PitchFormation({ tpl }) {
 export default function TabSeasonPulse({ data }) {
   const { glance, gwA, sAvg, defcon, seasonValue, formValue, tpl, tH, risers, fallers, tm, uf } = data;
 
+  // Smart Money: fetch Top 500 ownership on mount
+  const [smartMoney, setSmartMoney] = useState(null);
+  const [smLoading, setSmLoading] = useState(false);
+  const [smError, setSmError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const cacheKey = `fpl_smart_money_gw${glance.gw}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) { setSmartMoney(JSON.parse(cached)); return; }
+
+    setSmLoading(true);
+    fetch("/api/smart-money")
+      .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
+      .then((d) => { if (!cancelled) { setSmartMoney(d); sessionStorage.setItem(cacheKey, JSON.stringify(d)); } })
+      .catch((e) => { if (!cancelled) setSmError(e.message); })
+      .finally(() => { if (!cancelled) setSmLoading(false); });
+    return () => { cancelled = true; };
+  }, [glance.gw]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
@@ -198,23 +219,71 @@ export default function TabSeasonPulse({ data }) {
         </div>
       </Card>
 
-      {/* Panel 4: Smart Money — Placeholder */}
-      <Card style={{ textAlign: "center", padding: "32px 20px" }}>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 12, fontWeight: 500 }}>SMART MONEY — TOP 100K VS ALL MANAGERS</div>
-        <div style={{ fontSize: 14, color: COLORS.text, marginBottom: 8, fontWeight: 600 }}>
-          See which players elite managers own that the field doesn't, and vice versa.
+      {/* Panel 4: Smart Money */}
+      <Card>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>SMART MONEY — TOP 500 VS ALL MANAGERS</div>
+          {smartMoney && (
+            <div style={{ fontSize: 9, color: COLORS.textMuted }}>
+              {smartMoney.managersScanned} managers scanned
+            </div>
+          )}
         </div>
-        <div style={{
-          display: "inline-block", padding: "4px 12px", borderRadius: 6, fontSize: 10, fontWeight: 600,
-          background: `${COLORS.blue}15`, color: COLORS.blue, border: `1px solid ${COLORS.blue}25`,
-        }}>
-          Data source integration in progress
-        </div>
-        {/* TODO: Integrate Top 100K ownership data from LiveFPL or similar
-            Expected data shape per player: { id, name, team, pos, overall_ownership, top100k_ownership }
-            Display: two sub-tables
-              "Smart Money Buys" = top 10 by (top100k_own - overall_own), positive gap
-              "Casual Traps" = top 10 by (overall_own - top100k_own), positive gap */}
+        {smLoading && (
+          <div style={{ textAlign: "center", padding: "24px 0", color: COLORS.textMuted, fontSize: 12 }}>
+            Scanning top managers' picks... this takes ~15s
+          </div>
+        )}
+        {smError && (
+          <div style={{ textAlign: "center", padding: "24px 0", color: COLORS.red, fontSize: 12 }}>
+            Failed to load smart money data ({smError})
+          </div>
+        )}
+        {smartMoney && (
+          <SideBySide
+            left={
+              <>
+                <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.green, marginBottom: 8 }}>Smart Buys — Elite own more</div>
+                <PlayerTable
+                  players={smartMoney.smartBuys}
+                  columns={[
+                    { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
+                    { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
+                    { header: "Pos", render: (p) => <span style={{ color: POS_COLORS[p.posN], fontWeight: 700, fontSize: 10 }}>{p.pos}</span> },
+                    { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
+                    { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
+                    { header: "Top%", render: (p) => `${p.top_own}%`, style: () => ({ fontWeight: 600, color: COLORS.green }) },
+                    { header: "All%", render: (p) => `${p.overall_own}%`, style: () => ({ color: COLORS.textSecondary }) },
+                    { header: "Gap", render: (p) => `+${p.gap}`, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }) },
+                  ]}
+                />
+              </>
+            }
+            right={
+              <>
+                <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.red, marginBottom: 8 }}>Casual Traps — Field over-owns</div>
+                <PlayerTable
+                  players={smartMoney.casualTraps}
+                  columns={[
+                    { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
+                    { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
+                    { header: "Pos", render: (p) => <span style={{ color: POS_COLORS[p.posN], fontWeight: 700, fontSize: 10 }}>{p.pos}</span> },
+                    { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
+                    { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
+                    { header: "Top%", render: (p) => `${p.top_own}%`, style: () => ({ color: COLORS.textSecondary }) },
+                    { header: "All%", render: (p) => `${p.overall_own}%`, style: () => ({ fontWeight: 600, color: COLORS.red }) },
+                    { header: "Gap", render: (p) => `${p.gap}`, style: () => ({ fontWeight: 800, color: COLORS.red, fontFamily: "monospace" }) },
+                  ]}
+                />
+              </>
+            }
+          />
+        )}
+        {!smLoading && !smError && !smartMoney && (
+          <div style={{ textAlign: "center", padding: "24px 0", color: COLORS.textMuted, fontSize: 12 }}>
+            Smart money data loading...
+          </div>
+        )}
       </Card>
 
       {/* Panel 5: Average Manager Score by GW */}
