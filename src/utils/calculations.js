@@ -173,26 +173,48 @@ export function computeAll(apiData) {
 
   const flagged = pl.filter((p) => p.own > 10 && p.cop !== null && p.cop < 75);
 
-  // Pulse Rating
-  const fV = pl.filter((p) => p.own > 15).map((p) => p.aFDR);
-  const fM = fV.length ? fV.reduce((a, b) => a + b, 0) / fV.length : 3;
-  const fVar = fV.length > 1 ? Math.sqrt(fV.reduce((s, v) => s + (v - fM) ** 2, 0) / fV.length) : 0;
-  const hasDGW = Object.keys(dgwTeams).some((g) => +g === gw);
-  const hasBGW = Object.keys(bgwTeams).some((g) => +g === gw);
-  const specialGW = hasDGW ? 2 : hasBGW ? 1 : 0;
-  const pr = Math.min(
-    Math.max(
-      fVar * 3 + Math.min(flagged.length / 5, 1) * 2.5 + (sAvg > 0 ? Math.abs(1 - r3 / sAvg) : 0) * 3 + specialGW + 3,
-      1
-    ),
-    10
-  );
+  // --- Panel 1: GW at a Glance ---
+  const nextEvent = d.events.find((e) => e.is_next);
+  const lastEvent = done.length ? done[done.length - 1] : null;
+  const glance = {
+    gw,
+    deadline: nextEvent?.deadline_time || null,
+    lastAvg: lastEvent?.average_entry_score || 0,
+    lastHighest: lastEvent?.highest_score || 0,
+    sAvg,
+    lastVsSeason: lastEvent ? lastEvent.average_entry_score - sAvg : 0,
+    mostCaptained: [...pl].filter((p) => p.pos >= 3 && p.own > 15).sort((a, b) => b.own - a.own)[0]?.name || "—",
+  };
 
-  // Captaincy tracker — approximate most-captained as highest owned premium per GW
-  const premiums = pl.filter((p) => p.own > 20 && p.pts > 100);
-  const capHitRate = premiums.length > 0
-    ? Math.round((premiums.filter((p) => p.ppg > 5).length / premiums.length) * 100)
-    : 0;
+  // --- Panel 2: DEFCON Leaders ---
+  const defcon = pl
+    .filter((p) => (p.pos === 1 || p.pos === 2) && p.mins >= 1500)
+    .map((p) => {
+      const bonusPerApp = p.apps > 0 ? +(p.bonus / p.apps).toFixed(2) : 0;
+      const csRate = p.apps > 0 ? +(p.cs / p.apps).toFixed(2) : 0;
+      const raw = bonusPerApp * 0.35 + p.bps90 * 0.0025 + csRate * 0.25 + p.form * 0.15;
+      return { ...p, bonusPerApp, csRate, defconRaw: raw };
+    })
+    .sort((a, b) => b.defconRaw - a.defconRaw);
+  // Normalize to 0-10
+  const maxDR = defcon[0]?.defconRaw || 1;
+  defcon.forEach((p) => { p.defcon = +(p.defconRaw / maxDR * 10).toFixed(1); });
+
+  // --- Panel 3: Best Value ---
+  const valueAll = pl.filter((p) => p.mins > 900 && +p.price > 0);
+  const seasonValue = [...valueAll]
+    .map((p) => ({ ...p, ptsPM: +(p.pts / +p.price).toFixed(1) }))
+    .sort((a, b) => b.ptsPM - a.ptsPM)
+    .slice(0, 10);
+  const formValue = [...valueAll]
+    .filter((p) => p.form > 0)
+    .map((p) => ({ ...p, formPM: +(p.form / +p.price).toFixed(2) }))
+    .sort((a, b) => b.formPM - a.formPM)
+    .slice(0, 10);
+
+  // --- Panel 7: Price Movers ---
+  const risers = pl.filter((p) => p.pChg > 0).sort((a, b) => b.pChg - a.pChg).slice(0, 5);
+  const fallers = pl.filter((p) => p.pChg < 0).sort((a, b) => a.pChg - b.pChg).slice(0, 5);
 
   // Form players
   const fPl = pl.filter((p) => p.mins > 900 && p.form > 0).sort((a, b) => b.fScore - a.fScore);
@@ -228,8 +250,10 @@ export function computeAll(apiData) {
     .filter(Boolean);
 
   return {
-    gw, lastFinishedGW, gwA, sAvg, r3, tRR, tm, pl, plMap, tpl, tH, pM, flagged, pr, fPl, gems, hh, fk, risk,
-    dgwTeams, bgwTeams, capHitRate, uf,
+    gw, lastFinishedGW, gwA, sAvg, r3, tRR, tm, pl, plMap, tpl, tH, pM, flagged, fPl, gems, hh, fk, risk,
+    dgwTeams, bgwTeams, uf,
+    // Season Pulse panels
+    glance, defcon, seasonValue, formValue, risers, fallers,
   };
 }
 
