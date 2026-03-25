@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { COLORS } from "../utils/theme";
 
 export function Card({ children, style = {} }) {
@@ -67,33 +68,85 @@ export function SubBtn({ active, label, onClick }) {
   );
 }
 
+// Extract a sortable numeric value from a rendered cell
+function extractSortValue(player, col) {
+  if (col.sortKey) return col.sortKey(player);
+  const rendered = col.render(player, 0);
+  if (typeof rendered === "number") return rendered;
+  if (typeof rendered === "string") {
+    const n = parseFloat(rendered.replace(/[^0-9.\-]/g, ""));
+    if (!isNaN(n)) return n;
+    return rendered.toLowerCase();
+  }
+  // Try to extract from React element's children
+  if (rendered?.props?.children !== undefined) {
+    const c = rendered.props.children;
+    if (typeof c === "number") return c;
+    if (typeof c === "string") {
+      const n = parseFloat(c.replace(/[^0-9.\-]/g, ""));
+      return isNaN(n) ? c.toLowerCase() : n;
+    }
+  }
+  return 0;
+}
+
 export function PlayerTable({ players, columns }) {
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState("desc");
+
+  const handleSort = (colIdx) => {
+    if (colIdx === sortCol) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortCol(colIdx);
+      setSortDir("desc");
+    }
+  };
+
+  const sorted = sortCol !== null
+    ? [...players].sort((a, b) => {
+        const va = extractSortValue(a, columns[sortCol]);
+        const vb = extractSortValue(b, columns[sortCol]);
+        const cmp = typeof va === "string" ? va.localeCompare(vb) : va - vb;
+        return sortDir === "desc" ? -cmp : cmp;
+      })
+    : players;
+
   return (
     <div style={{ overflowX: "auto", borderRadius: 12, border: `1px solid ${COLORS.border}` }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
         <thead>
           <tr style={{ background: COLORS.surface }}>
-            {columns.map((c, i) => (
-              <th
-                key={i}
-                style={{
-                  padding: "10px 6px",
-                  textAlign: i <= 1 ? "left" : "center",
-                  color: COLORS.textSecondary,
-                  fontWeight: 600,
-                  fontSize: 10,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {c.header}
-              </th>
-            ))}
+            {columns.map((c, i) => {
+              const isActive = sortCol === i;
+              const arrow = isActive ? (sortDir === "desc" ? " ▼" : " ▲") : "";
+              return (
+                <th
+                  key={i}
+                  onClick={() => handleSort(i)}
+                  title={c.title || `Sort by ${c.header}`}
+                  style={{
+                    padding: "10px 6px",
+                    textAlign: i <= 1 ? "left" : "center",
+                    color: isActive ? COLORS.green : COLORS.textSecondary,
+                    fontWeight: 600,
+                    fontSize: 10,
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    transition: "color 0.15s",
+                  }}
+                >
+                  {c.header}{arrow}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
-          {players.map((p, idx) => (
+          {sorted.map((p, idx) => (
             <tr
-              key={p.id}
+              key={p.id ?? idx}
               style={{
                 borderTop: `1px solid ${COLORS.border}`,
                 background: idx % 2 ? `${COLORS.surface}25` : "transparent",
@@ -108,13 +161,66 @@ export function PlayerTable({ players, columns }) {
                     ...c.style?.(p),
                   }}
                 >
-                  {c.render(p, idx)}
+                  {/* Re-render rank column based on sorted position */}
+                  {c.header === "#" ? idx + 1 : c.render(p, idx)}
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+export function InteractiveBarChart({ data, labelKey, valueKey, avgLine, height = 100, colorFn, formatLabel, formatValue }) {
+  const [hover, setHover] = useState(null);
+  const mx = Math.max(...data.map((d) => d[valueKey]), 1);
+  const mn = Math.min(...data.map((d) => d[valueKey]));
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height, paddingTop: 20 }}>
+        {data.map((d, i) => {
+          const v = d[valueKey];
+          const isHover = hover === i;
+          const barColor = colorFn ? colorFn(d, v, mn, mx) : (v >= (avgLine || 0) ? `${COLORS.green}50` : `${COLORS.red}35`);
+          return (
+            <div
+              key={i}
+              style={{ flex: 1, minWidth: 0, position: "relative", cursor: "pointer" }}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+            >
+              <div
+                style={{
+                  height: Math.max((v / mx) * (height - 12), 3),
+                  background: barColor,
+                  borderRadius: "3px 3px 0 0",
+                  opacity: isHover ? 1 : 0.8,
+                  transition: "opacity 0.15s, transform 0.15s",
+                  transform: isHover ? "scaleY(1.05)" : "scaleY(1)",
+                  transformOrigin: "bottom",
+                }}
+              />
+              {isHover && (
+                <div style={{
+                  position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)",
+                  background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 6,
+                  padding: "4px 8px", fontSize: 10, whiteSpace: "nowrap", zIndex: 10,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)", marginBottom: 4, color: COLORS.text,
+                }}>
+                  <div style={{ fontWeight: 700 }}>{formatLabel ? formatLabel(d) : d[labelKey]}</div>
+                  <div style={{ color: COLORS.textSecondary }}>{formatValue ? formatValue(d) : v}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {avgLine !== undefined && (
+        <div style={{ height: 1, background: `${COLORS.amber}50`, marginBottom: 6 }} />
+      )}
     </div>
   );
 }

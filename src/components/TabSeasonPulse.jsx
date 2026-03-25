@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { COLORS, POS_COLORS, FDR_COLORS, FDR_TEXT } from "../utils/theme";
-import { Card, PlayerTable } from "./shared";
+import { Card, PlayerTable, InteractiveBarChart } from "./shared";
 
 function GlanceStat({ label, value, sub, color }) {
   return (
@@ -398,43 +398,20 @@ export default function TabSeasonPulse({ data }) {
       {/* Panel 5: Average Manager Score by GW */}
       <Card>
         <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>AVERAGE MANAGER SCORE BY GW</div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 100, paddingTop: 18 }}>
-          {gwA.map((g) => {
-            const mx = Math.max(...gwA.map((x) => x.avg), 1);
-            const mn = Math.min(...gwA.map((x) => x.avg));
-            const isMax = g.avg === mx;
-            const isMin = g.avg === mn;
-            return (
-              <div key={g.gw} style={{ flex: 1, minWidth: 0, position: "relative" }}>
-                <div
-                  title={`GW${g.gw}: ${g.avg}pts`}
-                  style={{
-                    height: Math.max((g.avg / mx) * 88, 3),
-                    background: g.avg >= sAvg ? `${COLORS.green}50` : `${COLORS.red}35`,
-                    borderRadius: "3px 3px 0 0",
-                  }}
-                />
-                {(isMax || isMin) && (
-                  <div style={{
-                    position: "absolute", top: -16, left: "50%", transform: "translateX(-50%)",
-                    fontSize: 8, fontWeight: 700, whiteSpace: "nowrap",
-                    color: isMax ? COLORS.green : COLORS.red,
-                  }}>
-                    {Math.round(g.avg)}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ height: 1, background: `${COLORS.amber}50`, marginBottom: 6 }} />
+        <InteractiveBarChart
+          data={gwA}
+          labelKey="gw"
+          valueKey="avg"
+          avgLine={sAvg}
+          height={100}
+          colorFn={(d) => d.avg >= sAvg ? `${COLORS.green}50` : `${COLORS.red}35`}
+          formatLabel={(d) => `GW${d.gw}`}
+          formatValue={(d) => `${d.avg.toFixed(1)} pts`}
+        />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW1</span>
           <span style={{ fontSize: 10, color: COLORS.amber }}>Avg: {sAvg.toFixed(1)}</span>
           <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW{gwA.length}</span>
-        </div>
-        <div style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 8, fontStyle: "italic" }}>
-          Top 100K comparison coming soon
         </div>
       </Card>
 
