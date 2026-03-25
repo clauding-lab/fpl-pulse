@@ -14,7 +14,7 @@ export function usePlayerHistory(playerIds) {
     let cancelled = false;
 
     const fetchBatch = async () => {
-      const toFetch = playerIds.filter((id) => !fetched.current.has(id)).slice(0, 20);
+      const toFetch = playerIds.filter((id) => !fetched.current.has(id));
       for (const id of toFetch) {
         if (cancelled) break;
         try {
