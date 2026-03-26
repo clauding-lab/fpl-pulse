@@ -123,21 +123,27 @@ export default function App() {
             >
               ?
             </button>
-            <button
+            <div
               onClick={toggleTheme}
-              style={{
-                background: "transparent",
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 6,
-                padding: "4px 8px",
-                cursor: "pointer",
-                fontSize: 14,
-                lineHeight: 1,
-              }}
               title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+              style={{
+                width: 44, height: 24, borderRadius: 12, cursor: "pointer",
+                background: darkMode ? COLORS.green : COLORS.border,
+                position: "relative", transition: "background 0.2s",
+              }}
             >
-              {darkMode ? "☀️" : "🌙"}
-            </button>
+              <div style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: "#fff",
+                position: "absolute", top: 3,
+                left: darkMode ? 23 : 3,
+                transition: "left 0.2s",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 10, lineHeight: 1,
+              }}>
+                {darkMode ? "🌙" : "☀️"}
+              </div>
+            </div>
           </div>
         </div>
       </div>
