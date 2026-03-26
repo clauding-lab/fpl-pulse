@@ -147,7 +147,8 @@ export default function TabMyPulse({ data }) {
       return;
     }
     setManagerName(`${result.entry.player_first_name} ${result.entry.player_last_name}`);
-    setAnalysis(analyzeSquad(result.picks, data, result.history));
+    const lastGwEntry = result.history?.current?.length ? result.history.current[result.history.current.length - 1] : null;
+    setAnalysis({ ...analyzeSquad(result.picks, data, result.history), lastGwEntry });
     setLoading(false);
   };
 
@@ -182,7 +183,7 @@ export default function TabMyPulse({ data }) {
     );
   }
 
-  const { squad, healthScore, weakest, bestXI, capPick, vicePick, chips } = analysis;
+  const { squad, healthScore, weakest, bestXI, capPick, vicePick, chips, lastGwEntry } = analysis;
   const starters = squad.filter((p) => !p.isBench);
   const bench = squad.filter((p) => p.isBench);
 
@@ -209,6 +210,14 @@ export default function TabMyPulse({ data }) {
 
       {/* Health Score + Stats */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
+        {lastGwEntry && (
+          <StatCard
+            label={`GW${lastGwEntry.event} SCORE`}
+            value={lastGwEntry.points}
+            sub={lastGwEntry.event_transfers_cost > 0 ? `(-${lastGwEntry.event_transfers_cost} hits)` : null}
+            color={lastGwEntry.points >= 60 ? COLORS.green : lastGwEntry.points >= 40 ? COLORS.amber : COLORS.red}
+          />
+        )}
         <StatCard label="SQUAD HEALTH" value={healthScore} sub="/ 100" color={healthScore >= 70 ? COLORS.green : healthScore >= 45 ? COLORS.amber : COLORS.red} />
         <StatCard label="GREENS" value={squad.filter((p) => p.status === "green").length} color={COLORS.green} />
         <StatCard label="AMBERS" value={squad.filter((p) => p.status === "amber").length} color={COLORS.amber} />
