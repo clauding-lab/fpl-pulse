@@ -327,17 +327,15 @@ export function analyzeSquad(picks, data, history) {
     : null;
 
   // Chip strategy — check which chips are still available
+  // 2025/26 season: every chip is available TWICE — once for GW1-18, once for GW19+
   const allChipNames = ["wildcard", "freehit", "bboost", "3xc"];
-  const usedChips = (history?.chips || []).map((c) => c.name);
+  const usedChipsList = history?.chips || [];
   const chipsLeft = {};
   allChipNames.forEach((c) => {
-    // Wildcard has 2 uses (before GW20 and after), others have 1
-    if (c === "wildcard") {
-      const wcUsed = usedChips.filter((u) => u === "wildcard").length;
-      chipsLeft[c] = wcUsed < 2;
-    } else {
-      chipsLeft[c] = !usedChips.includes(c);
-    }
+    const usedFirst = usedChipsList.some((u) => u.name === c && u.event <= 18);
+    const usedSecond = usedChipsList.some((u) => u.name === c && u.event >= 19);
+    // We're in GW19+ territory now, so only the second-half chip matters
+    chipsLeft[c] = !usedSecond;
   });
 
   const chips = {
