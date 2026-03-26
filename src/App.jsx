@@ -61,11 +61,10 @@ export default function App() {
   if (!data) return null;
 
   return (
-    <div style={{ background: COLORS.bg, minHeight: "100vh", color: COLORS.text, fontFamily: "'Outfit', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <div style={{ background: COLORS.bg, minHeight: "100vh", color: COLORS.text, fontFamily: "'Inter', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
 
       {/* Header */}
-      <div style={{ borderBottom: `1px solid ${COLORS.border}`, padding: "14px 20px" }}>
+      <div style={{ padding: "14px 20px" }}>
         <div
           style={{
             maxWidth: 1100,
@@ -149,8 +148,8 @@ export default function App() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: `1px solid ${COLORS.border}`, padding: "6px 20px", overflowX: "auto" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 4 }}>
+      <div style={{ padding: "6px 20px", overflowX: "auto" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 6, background: COLORS.bg, borderRadius: 12, padding: 4, boxShadow: COLORS.shadowInset }}>
           {TABS.map((t, i) => (
             <TabBtn key={i} label={t} active={tab === i} onClick={() => setTab(i)} />
           ))}

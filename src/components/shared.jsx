@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { COLORS } from "../utils/theme";
 
-export function Card({ children, style = {} }) {
+export function Card({ children, style = {}, inset = false }) {
   return (
     <div
       style={{
         background: COLORS.surface,
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 20,
+        boxShadow: inset ? COLORS.shadowInset : COLORS.shadowRaised,
+        border: "none",
+        transition: "box-shadow 0.2s",
         ...style,
       }}
     >
@@ -19,11 +21,17 @@ export function Card({ children, style = {} }) {
 
 export function StatCard({ label, value, sub, color = COLORS.text }) {
   return (
-    <Card style={{ textAlign: "center", flex: "1 1 130px", minWidth: 110 }}>
-      <div style={{ fontSize: 10, color: COLORS.textSecondary, letterSpacing: 1.5, marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 700, color }}>{value}</div>
+    <div
+      style={{
+        textAlign: "center", flex: "1 1 130px", minWidth: 110,
+        background: COLORS.surface, borderRadius: 14, padding: "16px 12px",
+        boxShadow: COLORS.shadowInset,
+      }}
+    >
+      <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1.5, marginBottom: 6, fontWeight: 600 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color, letterSpacing: -1 }}>{value}</div>
       {sub && <div style={{ fontSize: 10, color: COLORS.textSecondary, marginTop: 4 }}>{sub}</div>}
-    </Card>
+    </div>
   );
 }
 
@@ -34,13 +42,15 @@ export function TabBtn({ active, label, onClick }) {
       style={{
         background: active ? COLORS.surface : "transparent",
         color: active ? COLORS.green : COLORS.textSecondary,
-        border: active ? `1px solid ${COLORS.border}` : "1px solid transparent",
-        borderRadius: 8,
-        padding: "8px 16px",
+        border: "none",
+        borderRadius: 10,
+        padding: "8px 18px",
         fontSize: 13,
         fontWeight: active ? 700 : 500,
         cursor: "pointer",
         whiteSpace: "nowrap",
+        boxShadow: active ? COLORS.shadowRaised : "none",
+        transition: "all 0.2s",
       }}
     >
       {label}
@@ -113,10 +123,10 @@ export function PlayerTable({ players, columns }) {
     : players;
 
   return (
-    <div style={{ overflowX: "auto", borderRadius: 12, border: `1px solid ${COLORS.border}` }}>
+    <div style={{ overflowX: "auto", borderRadius: 14, boxShadow: COLORS.shadowInset }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
         <thead>
-          <tr style={{ background: COLORS.surface }}>
+          <tr style={{ background: "transparent" }}>
             {columns.map((c, i) => {
               const isActive = sortCol === i;
               const arrow = isActive ? (sortDir === "desc" ? " ▼" : " ▲") : "";
@@ -148,8 +158,8 @@ export function PlayerTable({ players, columns }) {
             <tr
               key={p.id ?? idx}
               style={{
-                borderTop: `1px solid ${COLORS.border}`,
-                background: idx % 2 ? `${COLORS.surface}25` : "transparent",
+                borderTop: `1px solid ${COLORS.border}20`,
+                background: idx % 2 ? `${COLORS.bg}40` : "transparent",
               }}
             >
               {columns.map((c, i) => (
@@ -208,7 +218,7 @@ export function InteractiveBarChart({ data, labelKey, valueKey, avgLine, height 
                   position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)",
                   background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 6,
                   padding: "4px 8px", fontSize: 10, whiteSpace: "nowrap", zIndex: 10,
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)", marginBottom: 4, color: COLORS.text,
+                  boxShadow: COLORS.shadowRaised, marginBottom: 4, color: COLORS.text,
                 }}>
                   <div style={{ fontWeight: 700 }}>{formatLabel ? formatLabel(d) : d[labelKey]}</div>
                   <div style={{ color: COLORS.textSecondary }}>{formatValue ? formatValue(d) : v}</div>

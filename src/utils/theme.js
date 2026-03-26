@@ -1,28 +1,39 @@
 const DARK = {
-  bg: "#0a0e17",
-  surface: "#131a2b",
-  border: "#1e2a42",
+  bg: "#1a1d2e",
+  surface: "#222640",
+  border: "#2a2e4a",
   text: "#e8edf5",
-  textSecondary: "#8892a5",
-  textMuted: "#4a5568",
-  green: "#00ff87",
-  red: "#ff2882",
-  amber: "#e8a50a",
-  blue: "#38bdf8",
-  fdr1: "#00ff87",
-  fdr2: "#4ade80",
-  fdr3: "#e8a50a",
-  fdr4: "#f87171",
-  fdr5: "#ff2882",
+  textSecondary: "#9ba3b8",
+  textMuted: "#5a6178",
+  green: "#00e676",
+  red: "#ff5252",
+  amber: "#ffab00",
+  blue: "#448aff",
+  fdr1: "#00e676",
+  fdr2: "#66bb6a",
+  fdr3: "#ffab00",
+  fdr4: "#ff5252",
+  fdr5: "#d50000",
+  // Neumorphism shadows
+  shadowRaised: "6px 6px 14px rgba(0,0,0,0.35), -4px -4px 10px rgba(255,255,255,0.04)",
+  shadowInset: "inset 3px 3px 6px rgba(0,0,0,0.3), inset -2px -2px 5px rgba(255,255,255,0.03)",
+  shadowHover: "4px 4px 10px rgba(0,0,0,0.3), -3px -3px 8px rgba(255,255,255,0.05), 0 0 0 1px rgba(255,255,255,0.04)",
 };
 
 const LIGHT_OVERRIDES = {
-  bg: "#f8fafc",
-  surface: "#ffffff",
-  border: "#e2e8f0",
-  text: "#0f172a",
-  textSecondary: "#64748b",
-  textMuted: "#94a3b8",
+  bg: "#e8ecf1",
+  surface: "#f0f3f8",
+  border: "#d4d9e3",
+  text: "#1a1d2e",
+  textSecondary: "#5a6178",
+  textMuted: "#8892a5",
+  green: "#00c853",
+  red: "#e53935",
+  amber: "#ff8f00",
+  blue: "#2979ff",
+  shadowRaised: "6px 6px 14px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.8)",
+  shadowInset: "inset 3px 3px 6px rgba(0,0,0,0.06), inset -2px -2px 5px rgba(255,255,255,0.7)",
+  shadowHover: "4px 4px 10px rgba(0,0,0,0.06), -3px -3px 8px rgba(255,255,255,0.9), 0 0 0 1px rgba(0,0,0,0.03)",
 };
 
 // Mutable COLORS object — toggled by setThemeMode()
@@ -42,9 +53,9 @@ export const FDR_COLORS = {
 };
 
 export const FDR_TEXT = {
-  1: "#0a0e17",
-  2: "#0a0e17",
-  3: "#0a0e17",
+  1: "#1a1d2e",
+  2: "#1a1d2e",
+  3: "#1a1d2e",
   4: "#fff",
   5: "#fff",
 };
@@ -52,8 +63,8 @@ export const FDR_TEXT = {
 export const POS_MAP = { 1: "GK", 2: "DEF", 3: "MID", 4: "FWD" };
 
 export const POS_COLORS = {
-  1: "#e8a50a",
-  2: "#4ade80",
-  3: "#38bdf8",
-  4: "#ff2882",
+  1: "#ffab00",
+  2: "#00e676",
+  3: "#448aff",
+  4: "#ff5252",
 };
