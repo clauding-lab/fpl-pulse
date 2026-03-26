@@ -122,27 +122,35 @@ export default function App() {
             >
               ?
             </button>
-            <div
+            <button
               onClick={toggleTheme}
               title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
               style={{
-                width: 44, height: 24, borderRadius: 12, cursor: "pointer",
-                background: darkMode ? COLORS.green : COLORS.border,
-                position: "relative", transition: "background 0.2s",
-              }}
-            >
-              <div style={{
-                width: 18, height: 18, borderRadius: "50%",
-                background: "#fff",
-                position: "absolute", top: 3,
-                left: darkMode ? 23 : 3,
-                transition: "left 0.2s",
+                width: 36, height: 36, borderRadius: 10, cursor: "pointer",
+                background: COLORS.surface,
+                boxShadow: COLORS.shadowRaised,
+                border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, lineHeight: 1,
-              }}>
-                {darkMode ? "🌙" : "☀️"}
-              </div>
-            </div>
+                transition: "box-shadow 0.2s, transform 0.15s",
+              }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.92)"; e.currentTarget.style.boxShadow = COLORS.shadowInset; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = COLORS.shadowRaised; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = COLORS.shadowRaised; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={darkMode ? COLORS.amber : COLORS.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {darkMode ? (
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                ) : (
+                  <>
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </>
+                )}
+              </svg>
+            </button>
           </div>
         </div>
       </div>
