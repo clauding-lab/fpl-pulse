@@ -7,9 +7,10 @@ import TabFixtureEngine from "./components/TabFixtureEngine";
 import TabPlayerIntel from "./components/TabPlayerIntel";
 import TabHiddenGems from "./components/TabHiddenGems";
 import TabMyPulse from "./components/TabMyPulse";
+import TabDeepDive from "./components/TabDeepDive";
 import ScoreExplainer from "./components/ScoreExplainer";
 
-const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Hidden Gems", "My Pulse"];
+const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Hidden Gems", "Deep Dive", "My Pulse"];
 
 function LoadingScreen() {
   return (
@@ -170,7 +171,8 @@ export default function App() {
         {tab === 1 && <TabFixtureEngine data={data} />}
         {tab === 2 && <TabPlayerIntel data={data} />}
         {tab === 3 && <TabHiddenGems data={data} />}
-        {tab === 4 && <TabMyPulse data={data} />}
+        {tab === 4 && <TabDeepDive data={data} />}
+        {tab === 5 && <TabMyPulse data={data} />}
       </div>
 
       {/* Score Explainer Modal */}
