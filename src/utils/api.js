@@ -18,12 +18,14 @@ export async function fetchPlayerSummary(playerId) {
 
 export async function fetchSquad(teamId, gw) {
   try {
-    const [picksR, entryR] = await Promise.all([
+    const [picksR, entryR, historyR] = await Promise.all([
       fetch(`${FPL_PROXY}entry/${teamId}/event/${gw}/picks/`),
       fetch(`${FPL_PROXY}entry/${teamId}/`),
+      fetch(`${FPL_PROXY}entry/${teamId}/history/`),
     ]);
     if (!picksR.ok || !entryR.ok) throw new Error();
-    return { picks: await picksR.json(), entry: await entryR.json() };
+    const history = historyR.ok ? await historyR.json() : null;
+    return { picks: await picksR.json(), entry: await entryR.json(), history };
   } catch {
     return null;
   }

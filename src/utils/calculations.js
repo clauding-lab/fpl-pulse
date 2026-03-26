@@ -278,74 +278,82 @@ export function computeAll(apiData) {
 }
 
 // Squad analysis for My Pulse
-export function analyzeSquad(picks, data) {
-  const { pl, plMap, uf, tRR } = data;
+export function analyzeSquad(picks, data, history) {
+  const { pl, plMap, uf } = data;
+
+  // Last GW points per player (from the picks response)
+  const lastGwPts = {};
+  (picks.picks || []).forEach((pk) => {
+    // element_summary in picks gives GW points if available
+    lastGwPts[pk.element] = pk.points ?? null;
+  });
+
   const squad = picks.picks.map((pk) => {
     const p = plMap[pk.element];
     if (!p) return null;
     const composite = +(p.form * 0.4 + p.fR * 3 + p.ppg * 0.3).toFixed(2);
     const status = composite >= 4.5 ? "green" : composite >= 3 ? "amber" : "red";
-    return { ...p, multiplier: pk.multiplier, isCaptain: pk.is_captain, isVice: pk.is_vice_captain, isBench: pk.position > 11, composite, status };
+    const next5 = (uf[p.teamId] || []).slice(0, 5);
+    return {
+      ...p, multiplier: pk.multiplier, isCaptain: pk.is_captain, isVice: pk.is_vice_captain,
+      isBench: pk.position > 11, composite, status, next5,
+      lastGwPts: lastGwPts[pk.element] ?? null,
+    };
   }).filter(Boolean);
 
   const healthScore = squad.length
     ? Math.round((squad.reduce((a, p) => a + p.composite, 0) / squad.length) * 10)
     : 0;
 
-  // Transfer priority — weakest link
+  // Transfer priority — weakest link (no replacement suggestion)
   const starters = squad.filter((p) => !p.isBench);
   const weakest = starters.length ? starters.reduce((a, b) => (a.composite < b.composite ? a : b)) : null;
 
-  // Find replacement for weakest link
-  let replacement = null;
-  if (weakest) {
-    const budget = +weakest.price + 0.5;
-    replacement = pl
-      .filter((p) => p.pos === weakest.pos && +p.price <= budget && p.fScore > weakest.fScore && !squad.some((s) => s.id === p.id))
-      .sort((a, b) => b.fScore - a.fScore)[0] || null;
-  }
-
-  // Best XI — sort by composite, pick best formation
+  // Best XI — valid formation (1GK, 3+ DEF, 2+ MID, 1+ FWD)
   const sorted = [...squad].sort((a, b) => b.composite - a.composite);
   const byPos = { 1: [], 2: [], 3: [], 4: [] };
   sorted.forEach((p) => byPos[p.pos]?.push(p));
-  const bestXI = [
-    ...byPos[1].slice(0, 1),
-    ...byPos[2].slice(0, Math.min(byPos[2].length, 5)),
-    ...byPos[3].slice(0, Math.min(byPos[3].length, 5)),
-    ...byPos[4].slice(0, Math.min(byPos[4].length, 3)),
-  ].slice(0, 11);
-  // Ensure valid formation (at least 1GK, 3DEF, 2MID, 1FWD)
   const bestGK = byPos[1][0];
   const bestDEF = byPos[2].slice(0, 3);
   const bestFWD = byPos[4].slice(0, 1);
   const remaining = sorted.filter((p) => p !== bestGK && !bestDEF.includes(p) && !bestFWD.includes(p));
   const fill = remaining.slice(0, 11 - 1 - 3 - 1);
-  const validXI = bestGK ? [bestGK, ...bestDEF, ...fill, ...bestFWD] : bestXI;
+  const validXI = bestGK ? [bestGK, ...bestDEF, ...fill, ...bestFWD] : sorted.slice(0, 11);
 
-  // Captain pick — highest composite in XI
+  // Captain pick
   const capPick = validXI.length ? validXI.reduce((a, b) => (a.composite > b.composite ? a : b)) : null;
   const vicePick = validXI.length > 1
     ? validXI.filter((p) => p !== capPick).reduce((a, b) => (a.composite > b.composite ? a : b))
     : null;
 
-  // Chip strategy
+  // Chip strategy — check which chips are still available
+  const allChipNames = ["wildcard", "freehit", "bboost", "3xc"];
+  const usedChips = (history?.chips || []).map((c) => c.name);
+  const chipsLeft = {};
+  allChipNames.forEach((c) => {
+    // Wildcard has 2 uses (before GW20 and after), others have 1
+    if (c === "wildcard") {
+      const wcUsed = usedChips.filter((u) => u === "wildcard").length;
+      chipsLeft[c] = wcUsed < 2;
+    } else {
+      chipsLeft[c] = !usedChips.includes(c);
+    }
+  });
+
   const chips = {
+    available: chipsLeft,
     benchBoost: null,
     tripleCaptain: null,
     freeHit: null,
-    wildcard: squad.filter((p) => p.status === "red").length >= 4,
+    wildcard: chipsLeft.wildcard && squad.filter((p) => p.status === "red").length >= 4,
   };
 
-  // Find best GW for bench boost (highest total floor across 15)
+  // Only suggest chip timing for chips that are still available
   const upcomingGWs = [...new Set(Object.values(uf).flat().map((f) => f.gw))].sort();
   if (upcomingGWs.length) {
-    let bestBBgw = upcomingGWs[0];
-    let bestBBscore = 0;
-    let bestTCgw = upcomingGWs[0];
-    let bestTCscore = 0;
-    let worstFHgw = upcomingGWs[0];
-    let worstFHscore = Infinity;
+    let bestBBgw = upcomingGWs[0], bestBBscore = 0;
+    let bestTCgw = upcomingGWs[0], bestTCscore = 0;
+    let worstFHgw = upcomingGWs[0], worstFHscore = Infinity;
 
     upcomingGWs.slice(0, 6).forEach((gwNum) => {
       const squadFDR = squad.reduce((sum, p) => {
@@ -360,10 +368,10 @@ export function analyzeSquad(picks, data) {
       if (tcScore > bestTCscore) { bestTCscore = tcScore; bestTCgw = gwNum; }
     });
 
-    chips.benchBoost = bestBBgw;
-    chips.tripleCaptain = bestTCgw;
-    chips.freeHit = worstFHgw;
+    if (chipsLeft.bboost) chips.benchBoost = bestBBgw;
+    if (chipsLeft["3xc"]) chips.tripleCaptain = bestTCgw;
+    if (chipsLeft.freehit) chips.freeHit = worstFHgw;
   }
 
-  return { squad, healthScore, weakest, replacement, bestXI: validXI, capPick, vicePick, chips };
+  return { squad, healthScore, weakest, bestXI: validXI, capPick, vicePick, chips };
 }

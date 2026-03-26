@@ -5,7 +5,9 @@ import { fetchSquad } from "../utils/api";
 import { analyzeSquad } from "../utils/calculations";
 import html2canvas from "html2canvas";
 
-function SquadPlayer({ p }) {
+const FDR_MINI = { 1: "#00ff87", 2: "#00ff87", 3: "#e8a50a", 4: "#ff2882", 5: "#80072d" };
+
+function SquadPlayer({ p, tm }) {
   const borderColor = p.status === "green" ? COLORS.green : p.status === "amber" ? COLORS.amber : COLORS.red;
   return (
     <div
@@ -18,23 +20,38 @@ function SquadPlayer({ p }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        gap: 8,
+        gap: 6,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9, width: 24 }}>{p.posL}</span>
-        <span style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</span>
-        {p.isCaptain && <span style={{ fontSize: 9, background: COLORS.amber, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700 }}>C</span>}
-        {p.isVice && <span style={{ fontSize: 9, background: COLORS.blue, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700 }}>V</span>}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1 }}>
+        <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9, width: 24, flexShrink: 0 }}>{p.posL}</span>
+        <span style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
+        {p.isCaptain && <span style={{ fontSize: 9, background: COLORS.amber, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700, flexShrink: 0 }}>C</span>}
+        {p.isVice && <span style={{ fontSize: 9, background: COLORS.blue, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700, flexShrink: 0 }}>V</span>}
       </div>
-      <div style={{ display: "flex", gap: 12, fontSize: 11 }}>
-        <span style={{ color: COLORS.textSecondary }}>£{p.price}</span>
-        <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace" }}>
+      <div style={{ display: "flex", gap: 8, fontSize: 11, alignItems: "center", flexShrink: 0 }}>
+        <span style={{ color: COLORS.textSecondary, width: 30, textAlign: "right" }}>£{p.price}</span>
+        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
+          {p.lastGwPts != null ? p.lastGwPts : "—"}
+        </span>
+        <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 26, textAlign: "right" }}>
           {p.form}
         </span>
-        <span style={{ color: borderColor, fontWeight: 700, fontFamily: "monospace", width: 32, textAlign: "right" }}>
+        <span style={{ color: borderColor, fontWeight: 700, fontFamily: "monospace", width: 30, textAlign: "right" }}>
           {p.composite}
         </span>
+        <div style={{ display: "flex", gap: 2 }}>
+          {(p.next5 || []).map((f, i) => (
+            <div key={i} title={`GW${f.gw}: ${tm?.[f.opp]?.short_name || "?"} ${f.home ? "(H)" : "(A)"}`} style={{
+              width: 22, height: 18, borderRadius: 3,
+              background: FDR_MINI[f.fdr] || COLORS.amber,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 7, fontWeight: 700, color: f.fdr >= 4 ? "#fff" : "#111",
+            }}>
+              {tm?.[f.opp]?.short_name?.slice(0, 3) || "?"}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -130,7 +147,7 @@ export default function TabMyPulse({ data }) {
       return;
     }
     setManagerName(`${result.entry.player_first_name} ${result.entry.player_last_name}`);
-    setAnalysis(analyzeSquad(result.picks, data));
+    setAnalysis(analyzeSquad(result.picks, data, result.history));
     setLoading(false);
   };
 
@@ -165,7 +182,7 @@ export default function TabMyPulse({ data }) {
     );
   }
 
-  const { squad, healthScore, weakest, replacement, bestXI, capPick, vicePick, chips } = analysis;
+  const { squad, healthScore, weakest, bestXI, capPick, vicePick, chips } = analysis;
   const starters = squad.filter((p) => !p.isBench);
   const bench = squad.filter((p) => p.isBench);
 
@@ -201,19 +218,21 @@ export default function TabMyPulse({ data }) {
       {/* Squad List */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 8, fontWeight: 500 }}>STARTING XI</div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, padding: "0 12px 6px", fontSize: 9, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
-          <span style={{ width: 36, textAlign: "right" }}>PRICE</span>
-          <span style={{ width: 32, textAlign: "right" }}>FORM</span>
-          <span style={{ width: 32, textAlign: "right" }}>SCORE</span>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "0 12px 6px", fontSize: 8, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
+          <span style={{ width: 30, textAlign: "right" }}>PRICE</span>
+          <span style={{ width: 22, textAlign: "right" }}>GW</span>
+          <span style={{ width: 26, textAlign: "right" }}>FORM</span>
+          <span style={{ width: 30, textAlign: "right" }}>SCORE</span>
+          <span style={{ width: 120, textAlign: "center" }}>NEXT 5 FIXTURES</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {starters.map((p) => <SquadPlayer key={p.id} p={p} />)}
+          {starters.map((p) => <SquadPlayer key={p.id} p={p} tm={data.tm} />)}
         </div>
         {bench.length > 0 && (
           <>
             <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginTop: 16, marginBottom: 8, fontWeight: 500 }}>BENCH</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {bench.map((p) => <SquadPlayer key={p.id} p={p} />)}
+              {bench.map((p) => <SquadPlayer key={p.id} p={p} tm={data.tm} />)}
             </div>
           </>
         )}
@@ -228,18 +247,9 @@ export default function TabMyPulse({ data }) {
       {weakest && (
         <Card style={{ marginBottom: 16, borderLeft: `3px solid ${COLORS.red}` }}>
           <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 10, fontWeight: 500 }}>WEAKEST LINK</div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.red }}>{weakest.name}</div>
-              <div style={{ fontSize: 11, color: COLORS.textSecondary }}>{weakest.team} · {weakest.posL} · £{weakest.price} · {weakest.form} form · Score: {weakest.composite}</div>
-            </div>
-            {replacement && (
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 10, color: COLORS.textSecondary, marginBottom: 2 }}>SUGGESTED REPLACEMENT</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.green }}>{replacement.name}</div>
-                <div style={{ fontSize: 11, color: COLORS.textSecondary }}>{replacement.team} · £{replacement.price} · {replacement.form} form · Score: {replacement.fScore}</div>
-              </div>
-            )}
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.red }}>{weakest.name}</div>
+            <div style={{ fontSize: 11, color: COLORS.textSecondary }}>{weakest.team} · {weakest.posL} · £{weakest.price} · {weakest.form} form · Score: {weakest.composite}</div>
           </div>
         </Card>
       )}
@@ -269,29 +279,49 @@ export default function TabMyPulse({ data }) {
       <Card>
         <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 12, fontWeight: 500 }}>CHIP STRATEGIST</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
-          {chips.benchBoost && (
-            <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center" }}>
-              <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>BENCH BOOST</div>
+          {/* Bench Boost */}
+          <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center", opacity: chips.available.bboost ? 1 : 0.4 }}>
+            <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>BENCH BOOST</div>
+            {!chips.available.bboost ? (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>USED</div>
+            ) : chips.benchBoost ? (
               <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.green }}>GW{chips.benchBoost}</div>
-            </div>
-          )}
-          {chips.tripleCaptain && (
-            <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center" }}>
-              <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>TRIPLE CAPTAIN</div>
+            ) : (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>AVAILABLE</div>
+            )}
+          </div>
+          {/* Triple Captain */}
+          <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center", opacity: chips.available["3xc"] ? 1 : 0.4 }}>
+            <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>TRIPLE CAPTAIN</div>
+            {!chips.available["3xc"] ? (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>USED</div>
+            ) : chips.tripleCaptain ? (
               <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.amber }}>GW{chips.tripleCaptain}</div>
-            </div>
-          )}
-          {chips.freeHit && (
-            <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center" }}>
-              <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>FREE HIT</div>
+            ) : (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>AVAILABLE</div>
+            )}
+          </div>
+          {/* Free Hit */}
+          <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center", opacity: chips.available.freehit ? 1 : 0.4 }}>
+            <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>FREE HIT</div>
+            {!chips.available.freehit ? (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>USED</div>
+            ) : chips.freeHit ? (
               <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.blue }}>GW{chips.freeHit}</div>
-            </div>
-          )}
-          <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${chips.wildcard ? COLORS.red : COLORS.border}`, textAlign: "center" }}>
+            ) : (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>AVAILABLE</div>
+            )}
+          </div>
+          {/* Wildcard */}
+          <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${chips.wildcard ? COLORS.red : COLORS.border}`, textAlign: "center", opacity: chips.available.wildcard ? 1 : 0.4 }}>
             <div style={{ fontSize: 9, color: COLORS.textSecondary, letterSpacing: 1, marginBottom: 4 }}>WILDCARD</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: chips.wildcard ? COLORS.red : COLORS.green }}>
-              {chips.wildcard ? "CONSIDER" : "HOLD"}
-            </div>
+            {!chips.available.wildcard ? (
+              <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>USED</div>
+            ) : (
+              <div style={{ fontSize: 14, fontWeight: 700, color: chips.wildcard ? COLORS.red : COLORS.green }}>
+                {chips.wildcard ? "CONSIDER" : "HOLD"}
+              </div>
+            )}
           </div>
         </div>
       </Card>
