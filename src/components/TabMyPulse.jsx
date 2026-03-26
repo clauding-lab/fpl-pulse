@@ -64,7 +64,7 @@ function TransferMatrix({ squad }) {
 
   return (
     <Card>
-      <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 12, fontWeight: 500 }}>
+      <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 12, fontWeight: 700 }}>
         TRANSFER PRIORITY MATRIX
       </div>
       <div style={{ position: "relative", height: 260, border: `1px solid ${COLORS.border}`, borderRadius: 8, overflow: "hidden" }}>
@@ -226,7 +226,7 @@ export default function TabMyPulse({ data }) {
 
       {/* Squad List */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 8, fontWeight: 500 }}>STARTING XI</div>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 8, fontWeight: 700 }}>STARTING XI</div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "0 12px 6px", fontSize: 8, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
           <span style={{ width: 30, textAlign: "right" }}>PRICE</span>
           <span style={{ width: 22, textAlign: "right" }}>GW</span>
@@ -239,7 +239,7 @@ export default function TabMyPulse({ data }) {
         </div>
         {bench.length > 0 && (
           <>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginTop: 16, marginBottom: 8, fontWeight: 500 }}>BENCH</div>
+            <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginTop: 16, marginBottom: 8, fontWeight: 700 }}>BENCH</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {bench.map((p) => <SquadPlayer key={p.id} p={p} tm={data.tm} />)}
             </div>
@@ -255,7 +255,7 @@ export default function TabMyPulse({ data }) {
       {/* Weakest Link */}
       {weakest && (
         <Card style={{ marginBottom: 16, borderLeft: `3px solid ${COLORS.red}` }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 10, fontWeight: 500 }}>WEAKEST LINK</div>
+          <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 10, fontWeight: 700 }}>WEAKEST LINK</div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: COLORS.red }}>{weakest.name}</div>
             <div style={{ fontSize: 11, color: COLORS.textSecondary }}>{weakest.team} · {weakest.posL} · £{weakest.price} · {weakest.form} form · Score: {weakest.composite}</div>
@@ -265,7 +265,7 @@ export default function TabMyPulse({ data }) {
 
       {/* Best XI */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 10, fontWeight: 500 }}>OPTIMAL XI SUGGESTION</div>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 10, fontWeight: 700 }}>OPTIMAL XI SUGGESTION</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {bestXI.map((p) => (
             <div key={p.id} style={{ background: COLORS.bg, borderRadius: 6, padding: "5px 10px", fontSize: 12, display: "flex", alignItems: "center", gap: 6, border: `1px solid ${COLORS.border}` }}>
@@ -286,7 +286,7 @@ export default function TabMyPulse({ data }) {
 
       {/* Chip Strategist */}
       <Card>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 12, fontWeight: 500 }}>CHIP STRATEGIST</div>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 12, fontWeight: 700 }}>CHIP STRATEGIST</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
           {/* Bench Boost */}
           <div style={{ background: COLORS.bg, borderRadius: 8, padding: 12, border: `1px solid ${COLORS.border}`, textAlign: "center", opacity: chips.available.bboost ? 1 : 0.4 }}>

@@ -32,7 +32,7 @@ export default function TabFixtureEngine({ data }) {
       )}
 
       {/* Fixture Grid */}
-      <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>
+      <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 14, fontWeight: 700 }}>
         FIXTURE RUN-INS · EASIEST RUN FIRST
       </div>
       <div style={{ overflowX: "auto", borderRadius: 12, border: `1px solid ${COLORS.border}`, marginBottom: 20 }}>

@@ -109,7 +109,7 @@ function DualBarChart({ gwA, sAvg, top100kAvgs }) {
   return (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 8 }}>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>AVERAGE MANAGER SCORE BY GW</div>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>AVERAGE MANAGER SCORE BY GW</div>
         <div style={{ display: "flex", gap: 14, fontSize: 9, color: COLORS.textSecondary }}>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#22c55e", marginRight: 4, verticalAlign: "middle" }} />Above Avg</span>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#ef4444", marginRight: 4, verticalAlign: "middle" }} />Below Avg</span>
@@ -278,7 +278,7 @@ export default function TabSeasonPulse({ data }) {
       {/* Panel 2: Template Tracker — Pitch Formation */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>TEMPLATE TRACKER</div>
+          <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>TEMPLATE TRACKER</div>
           <div style={{ fontSize: 12, color: COLORS.amber, fontWeight: 700 }}>{tH.toFixed(1)} avg form</div>
         </div>
         <PitchFormation tpl={tpl} />
@@ -289,7 +289,7 @@ export default function TabSeasonPulse({ data }) {
 
       {/* Panel 3: Price Movers */}
       <Card>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>PRICE MOVERS</div>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 14, fontWeight: 700 }}>PRICE MOVERS</div>
         <SideBySide
           left={
             <>
@@ -335,7 +335,7 @@ export default function TabSeasonPulse({ data }) {
       {/* Panel 4: DEFCON Leaders */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>DEFCON LEADERS — DEFENSIVE CONTRIBUTION</div>
+          <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>DEFCON LEADERS — DEFENSIVE CONTRIBUTION</div>
           {dcLoading && <div style={{ fontSize: 9, color: COLORS.blue }}>Loading per-game data...</div>}
           {dcData && <div style={{ fontSize: 9, color: COLORS.textMuted }}>Sorted by actual FPL pts from DefCon</div>}
         </div>
@@ -387,7 +387,7 @@ export default function TabSeasonPulse({ data }) {
 
       {/* Panel 5: Best Value */}
       <Card>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 14, fontWeight: 500 }}>BEST VALUE — POINTS PER MILLION</div>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 14, fontWeight: 700 }}>BEST VALUE — POINTS PER MILLION</div>
         <SideBySide
           left={
             <>
@@ -432,7 +432,7 @@ export default function TabSeasonPulse({ data }) {
       {/* Panel 4: Smart Money */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 500 }}>SMART MONEY — TOP 500 VS ALL MANAGERS</div>
+          <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>SMART MONEY — TOP 500 VS ALL MANAGERS</div>
           {smartMoney && (
             <div style={{ fontSize: 9, color: COLORS.textMuted }}>
               {smartMoney.managersScanned} managers scanned
