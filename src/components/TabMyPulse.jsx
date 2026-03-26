@@ -337,7 +337,7 @@ export default function TabMyPulse({ data }) {
 
       {/* Watermark */}
       <div style={{ textAlign: "center", marginTop: 16, fontSize: 10, color: COLORS.textMuted }}>
-        FPL Pulse · @adnanrashid
+        FPL Pulse
       </div>
 
       </div>{/* end screenshot zone */}

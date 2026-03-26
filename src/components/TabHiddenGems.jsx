@@ -78,7 +78,7 @@ export default function TabHiddenGems({ data }) {
           `   Form: ${p.form} | xGI/90: ${p.xGI90} | xG gap: ${+xGG > 0 ? "+" : ""}${xGG}\n` +
           `   Own: ${p.own}% | FDR: ${p.aFDR.toFixed(1)}\n`;
       }),
-      `\nData: FPL Pulse · Built by @adnanrashid`,
+      `\nData: FPL Pulse`,
     ];
     return lines.join("\n");
   };
@@ -165,7 +165,7 @@ export default function TabHiddenGems({ data }) {
 
       {/* Watermark */}
       <div style={{ textAlign: "center", marginTop: 20, fontSize: 10, color: COLORS.textMuted }}>
-        FPL Pulse · @adnanrashid
+        FPL Pulse
       </div>
     </div>
   );

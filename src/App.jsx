@@ -104,7 +104,7 @@ export default function App() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 11, color: COLORS.textSecondary }}>
-              GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>} · Built by Adnan Rashid
+              GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>} · FPL Pulse
             </div>
             <button
               onClick={() => setShowExplainer(true)}
@@ -156,8 +156,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* Tab bar */}
-      <div style={{ padding: "6px 20px", overflowX: "auto" }}>
+      {/* Desktop tab bar (top) */}
+      <div className="desktop-tab-bar" style={{ padding: "6px 20px", overflowX: "auto" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 6, background: COLORS.bg, borderRadius: 12, padding: 4, boxShadow: COLORS.shadowInset }}>
           {TABS.map((t, i) => (
             <TabBtn key={i} label={t} active={tab === i} onClick={() => setTab(i)} />
@@ -166,7 +166,7 @@ export default function App() {
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 40px" }}>
+      <div className="app-content" style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 40px" }}>
         {tab === 0 && <TabSeasonPulse data={data} />}
         {tab === 1 && <TabFixtureEngine data={data} />}
         {tab === 2 && <TabPlayerIntel data={data} />}
@@ -178,17 +178,61 @@ export default function App() {
       {/* Score Explainer Modal */}
       {showExplainer && <ScoreExplainer onClose={() => setShowExplainer(false)} />}
 
-      {/* Footer */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 40px" }}>
+      {/* Footer (desktop only — hidden on mobile by bottom bar overlap) */}
+      <div className="desktop-tab-bar" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 40px" }}>
         <div style={{ paddingTop: 20, borderTop: `1px solid ${COLORS.border}`, textAlign: "center" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.green }} />
             <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textSecondary }}>FPL PULSE</span>
           </div>
           <div style={{ fontSize: 11, color: COLORS.textMuted }}>
-            Built by Adnan Rashid · Powered by Claude AI · Data from Fantasy Premier League API
+            Powered by Claude AI · Data from Fantasy Premier League API
           </div>
         </div>
+      </div>
+
+      {/* Mobile bottom tab bar */}
+      <div
+        className="mobile-tab-bar"
+        style={{
+          display: "none",
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 999,
+          background: COLORS.surface,
+          boxShadow: "0 -2px 16px rgba(0,0,0,0.15)",
+          paddingBottom: "env(safe-area-inset-bottom, 8px)",
+          paddingTop: 6,
+          justifyContent: "space-around", alignItems: "center",
+        }}
+      >
+        {[
+          { icon: "📊", label: "Season" },
+          { icon: "📅", label: "Fixtures" },
+          { icon: "⚡", label: "Players" },
+          { icon: "💎", label: "Gems" },
+          { icon: "🔬", label: "Deep Dive" },
+          { icon: "👤", label: "My Pulse" },
+        ].map((t, i) => (
+          <button
+            key={i}
+            onClick={() => setTab(i)}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+              padding: "4px 8px", minWidth: 0, flex: 1,
+              opacity: tab === i ? 1 : 0.5,
+              transition: "opacity 0.15s",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>{t.icon}</span>
+            <span style={{
+              fontSize: 9, fontWeight: tab === i ? 700 : 500,
+              color: tab === i ? COLORS.green : COLORS.textSecondary,
+              letterSpacing: 0.3,
+            }}>
+              {t.label}
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );

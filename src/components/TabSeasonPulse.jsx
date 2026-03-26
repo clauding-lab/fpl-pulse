@@ -283,7 +283,7 @@ export default function TabSeasonPulse({ data }) {
         </div>
         <PitchFormation tpl={tpl} />
         <div style={{ textAlign: "center", marginTop: 12, fontSize: 10, color: COLORS.textMuted }}>
-          FPL Pulse · @adnanrashid
+          FPL Pulse
         </div>
       </Card>
 
@@ -381,7 +381,7 @@ export default function TabSeasonPulse({ data }) {
           ]}
         />
         <div style={{ textAlign: "center", marginTop: 12, fontSize: 10, color: COLORS.textMuted }}>
-          FPL Pulse · @adnanrashid
+          FPL Pulse
         </div>
       </Card>
 

@@ -127,7 +127,7 @@ export default function TabFixtureEngine({ data }) {
 
       {/* Watermark */}
       <div style={{ textAlign: "center", marginTop: 20, fontSize: 10, color: COLORS.textMuted }}>
-        FPL Pulse · @adnanrashid
+        FPL Pulse
       </div>
     </div>
   );

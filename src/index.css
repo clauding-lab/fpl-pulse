@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+html {
+  /* iOS safe area support */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -39,4 +44,15 @@ body {
 /* Ensure fixture grid doesn't break on mobile */
 @media (max-width: 480px) {
   table { min-width: 600px; }
+}
+
+/* Bottom tab bar on mobile */
+@media (max-width: 768px) {
+  .desktop-tab-bar { display: none !important; }
+  .mobile-tab-bar { display: flex !important; }
+  .app-content { padding-bottom: calc(64px + env(safe-area-inset-bottom, 20px)) !important; }
+}
+@media (min-width: 769px) {
+  .desktop-tab-bar { display: block !important; }
+  .mobile-tab-bar { display: none !important; }
 }
