@@ -48,7 +48,7 @@ function LoadingScreen() {
 
 export default function App() {
   const [tab, setTab] = useState(0);
-  const [darkMode, setDarkMode] = useState(() => { setThemeMode(true); return true; });
+  const [darkMode, setDarkMode] = useState(() => { setThemeMode(false); return false; });
   const [showExplainer, setShowExplainer] = useState(false);
   const { loading, usingMock, data } = useFplData();
 
