@@ -345,6 +345,7 @@ function XgTablePanel({ data }) {
 function PlayerCardPanel({ data }) {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [dropOpen, setDropOpen] = useState(false);
   const suggestions = search.length >= 2
     ? data.pl.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()) || p.teamName.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
     : [];
@@ -358,13 +359,14 @@ function PlayerCardPanel({ data }) {
       <div style={{ position: "relative", maxWidth: 340, marginBottom: 16 }}>
         <input
           type="text" placeholder="Search player..." value={search}
-          onChange={(e) => { setSearch(e.target.value); setSelectedId(null); }}
+          onChange={(e) => { setSearch(e.target.value); setSelectedId(null); setDropOpen(true); }}
+          onFocus={() => setDropOpen(true)}
           style={{ width: "100%", background: COLORS.bg, border: "none", borderRadius: 10, padding: "10px 14px", color: COLORS.text, fontSize: 13, boxShadow: COLORS.shadowInset, outline: "none" }}
         />
-        {suggestions.length > 0 && !selectedId && (
+        {dropOpen && suggestions.length > 0 && !selectedId && (
           <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: COLORS.surface, borderRadius: 10, boxShadow: COLORS.shadowRaised, zIndex: 10, marginTop: 4, overflow: "hidden" }}>
             {suggestions.map((s) => (
-              <div key={s.id} onClick={() => { setSelectedId(s.id); setSearch(s.name); }}
+              <div key={s.id} onClick={() => { setSelectedId(s.id); setSearch(s.name); setDropOpen(false); }}
                 style={{ padding: "8px 14px", cursor: "pointer", fontSize: 12, display: "flex", justifyContent: "space-between", borderBottom: `1px solid ${COLORS.border}20` }}>
                 <span style={{ fontWeight: 600 }}>{s.name}</span>
                 <span style={{ color: COLORS.textMuted }}>{s.team} · <span style={{ color: POS_COLORS[s.pos] }}>{s.posL}</span></span>
@@ -481,6 +483,8 @@ function H2HPanel({ data }) {
   const [searchB, setSearchB] = useState("");
   const [idA, setIdA] = useState(null);
   const [idB, setIdB] = useState(null);
+  const [openA, setOpenA] = useState(false);
+  const [openB, setOpenB] = useState(false);
 
   const suggest = (q) => q.length >= 2
     ? data.pl.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6)
@@ -506,16 +510,17 @@ function H2HPanel({ data }) {
   const winsA = metrics.filter((m) => m.lower ? m.a < m.b : m.a > m.b).length;
   const winsB = metrics.filter((m) => m.lower ? m.b < m.a : m.b > m.a).length;
 
-  const SearchBox = ({ value, onChange, onSelect, exclude }) => (
+  const SearchBox = ({ value, onChange, onSelect, exclude, isOpen, setOpen }) => (
     <div style={{ position: "relative", flex: 1 }}>
       <input type="text" placeholder="Search player..." value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
         style={{ width: "100%", background: COLORS.bg, border: "none", borderRadius: 10, padding: "10px 14px", color: COLORS.text, fontSize: 13, boxShadow: COLORS.shadowInset, outline: "none" }}
       />
-      {suggest(value).length > 0 && (
+      {isOpen && suggest(value).length > 0 && (
         <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: COLORS.surface, borderRadius: 10, boxShadow: COLORS.shadowRaised, zIndex: 10, marginTop: 4, overflow: "hidden" }}>
           {suggest(value).filter((s) => s.id !== exclude).map((s) => (
-            <div key={s.id} onClick={() => { onSelect(s.id); onChange(s.name); }}
+            <div key={s.id} onClick={() => { onSelect(s.id); onChange(s.name); setOpen(false); }}
               style={{ padding: "8px 14px", cursor: "pointer", fontSize: 12, borderBottom: `1px solid ${COLORS.border}20` }}>
               <span style={{ fontWeight: 600 }}>{s.name}</span> <span style={{ color: COLORS.textMuted }}>{s.team}</span>
             </div>
@@ -529,9 +534,9 @@ function H2HPanel({ data }) {
     <Card>
       <SectionTitle sub="Compare any two players head-to-head across every key metric">HEAD-TO-HEAD COMPARATOR</SectionTitle>
       <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-        <SearchBox value={searchA} onChange={(v) => { setSearchA(v); setIdA(null); }} onSelect={setIdA} exclude={idB} />
+        <SearchBox value={searchA} onChange={(v) => { setSearchA(v); setIdA(null); }} onSelect={setIdA} exclude={idB} isOpen={openA} setOpen={setOpenA} />
         <div style={{ fontSize: 14, fontWeight: 800, color: COLORS.textMuted, alignSelf: "center" }}>VS</div>
-        <SearchBox value={searchB} onChange={(v) => { setSearchB(v); setIdB(null); }} onSelect={setIdB} exclude={idA} />
+        <SearchBox value={searchB} onChange={(v) => { setSearchB(v); setIdB(null); }} onSelect={setIdB} exclude={idA} isOpen={openB} setOpen={setOpenB} />
       </div>
       {pA && pB && (
         <>
