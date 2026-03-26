@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>FPL Pulse — Read the game before the deadline</title>
     <meta name="description" content="FPL intelligence tool. Fixture analysis, player form tracking, hidden gems, and squad optimization." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-master.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="FPL Pulse" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -23,10 +29,17 @@
     <meta name="twitter:image" content="https://fplpulse.vercel.app/og-card.svg" />
     <meta name="twitter:creator" content="@fplpulse" />
 
-    <meta name="theme-color" content="#0a0e17" />
+    <meta name="theme-color" content="#e8ecf1" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

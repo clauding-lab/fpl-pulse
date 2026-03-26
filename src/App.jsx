@@ -104,20 +104,18 @@ export default function App() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 11, color: COLORS.textSecondary }}>
-              GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>} · FPL Pulse
+              GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>}
             </div>
             <button
               onClick={() => setShowExplainer(true)}
               style={{
+                width: 32, height: 32, borderRadius: 8, cursor: "pointer",
                 background: COLORS.surface,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 6,
-                padding: "4px 10px",
-                cursor: "pointer",
-                fontSize: 10,
-                fontWeight: 600,
-                color: COLORS.blue,
-                letterSpacing: 0.5,
+                boxShadow: COLORS.shadowRaised,
+                border: "none",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 13, fontWeight: 700, color: COLORS.blue,
+                transition: "box-shadow 0.2s, transform 0.15s",
               }}
               title="How scores are calculated"
             >
@@ -127,7 +125,7 @@ export default function App() {
               onClick={toggleTheme}
               title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
               style={{
-                width: 36, height: 36, borderRadius: 10, cursor: "pointer",
+                width: 32, height: 32, borderRadius: 8, cursor: "pointer",
                 background: COLORS.surface,
                 boxShadow: COLORS.shadowRaised,
                 border: "none",
@@ -138,7 +136,7 @@ export default function App() {
               onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = COLORS.shadowRaised; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = COLORS.shadowRaised; }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={darkMode ? COLORS.amber : COLORS.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={darkMode ? COLORS.amber : COLORS.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 {darkMode ? (
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                 ) : (
