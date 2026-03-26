@@ -7,6 +7,7 @@ import TabFixtureEngine from "./components/TabFixtureEngine";
 import TabPlayerIntel from "./components/TabPlayerIntel";
 import TabHiddenGems from "./components/TabHiddenGems";
 import TabMyPulse from "./components/TabMyPulse";
+import ScoreExplainer from "./components/ScoreExplainer";
 
 const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Hidden Gems", "My Pulse"];
 
@@ -47,6 +48,7 @@ function LoadingScreen() {
 export default function App() {
   const [tab, setTab] = useState(0);
   const [darkMode, setDarkMode] = useState(true);
+  const [showExplainer, setShowExplainer] = useState(false);
   const { loading, usingMock, data } = useFplData();
 
   const toggleTheme = useCallback(() => {
@@ -100,10 +102,27 @@ export default function App() {
               BETA
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 11, color: COLORS.textSecondary }}>
               GW{data.gw} {usingMock && <span style={{ color: COLORS.amber }}>· Demo Mode</span>} · Built by Adnan Rashid
             </div>
+            <button
+              onClick={() => setShowExplainer(true)}
+              style={{
+                background: COLORS.surface,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 6,
+                padding: "4px 10px",
+                cursor: "pointer",
+                fontSize: 10,
+                fontWeight: 600,
+                color: COLORS.blue,
+                letterSpacing: 0.5,
+              }}
+              title="How scores are calculated"
+            >
+              ?
+            </button>
             <button
               onClick={toggleTheme}
               style={{
@@ -140,6 +159,9 @@ export default function App() {
         {tab === 3 && <TabHiddenGems data={data} />}
         {tab === 4 && <TabMyPulse data={data} />}
       </div>
+
+      {/* Score Explainer Modal */}
+      {showExplainer && <ScoreExplainer onClose={() => setShowExplainer(false)} />}
 
       {/* Footer */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 40px" }}>
