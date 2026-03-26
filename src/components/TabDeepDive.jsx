@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { COLORS, POS_COLORS, POS_MAP, FDR_COLORS, FDR_TEXT } from "../utils/theme";
-import { Card, PlayerTable, Sparkline } from "./shared";
-import { fetchPlayerSummary, playerPhotoUrl } from "../utils/api";
+import { Card, PlayerTable } from "./shared";
+import { playerPhotoUrl } from "../utils/api";
 
 /* ─── helpers ─── */
 const Pill = ({ children, color }) => (
@@ -21,9 +21,9 @@ const FdrMini = ({ fixture, tm }) => {
 };
 
 const SectionTitle = ({ children, sub }) => (
-  <div style={{ marginBottom: 14 }}>
-    <div style={{ fontSize: 11, letterSpacing: 2, color: COLORS.textSecondary, fontWeight: 600 }}>{children}</div>
-    {sub && <div style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 2 }}>{sub}</div>}
+  <div style={{ marginBottom: 18 }}>
+    <div style={{ fontSize: 16, letterSpacing: 1, color: COLORS.text, fontWeight: 800 }}>{children}</div>
+    {sub && <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{sub}</div>}
   </div>
 );
 
@@ -34,9 +34,6 @@ const PANELS = [
   "Fixture Proof",
   "Captain Roulette",
   "xG League Table",
-  "Player Card",
-  "GW Recap",
-  "Head-to-Head",
 ];
 
 /* ══════════════════════════════════════════════
@@ -340,245 +337,7 @@ function XgTablePanel({ data }) {
 }
 
 /* ══════════════════════════════════════════════
-   6. PLAYER CARD
-   ══════════════════════════════════════════════ */
-function PlayerCardPanel({ data }) {
-  const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
-  const [dropOpen, setDropOpen] = useState(false);
-  const suggestions = search.length >= 2
-    ? data.pl.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()) || p.teamName.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
-    : [];
 
-  const p = selectedId ? data.plMap[selectedId] : null;
-  const next3 = p ? (data.uf[p.teamId] || []).slice(0, 3) : [];
-
-  return (
-    <Card>
-      <SectionTitle sub="Search any player for a magazine-style stat card">PLAYER IN NUMBERS</SectionTitle>
-      <div style={{ position: "relative", maxWidth: 340, marginBottom: 16 }}>
-        <input
-          type="text" placeholder="Search player..." value={search}
-          onChange={(e) => { setSearch(e.target.value); setSelectedId(null); setDropOpen(true); }}
-          onFocus={() => setDropOpen(true)}
-          style={{ width: "100%", background: COLORS.bg, border: "none", borderRadius: 10, padding: "10px 14px", color: COLORS.text, fontSize: 13, boxShadow: COLORS.shadowInset, outline: "none" }}
-        />
-        {dropOpen && suggestions.length > 0 && !selectedId && (
-          <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: COLORS.surface, borderRadius: 10, boxShadow: COLORS.shadowRaised, zIndex: 10, marginTop: 4, overflow: "hidden" }}>
-            {suggestions.map((s) => (
-              <div key={s.id} onClick={() => { setSelectedId(s.id); setSearch(s.name); setDropOpen(false); }}
-                style={{ padding: "8px 14px", cursor: "pointer", fontSize: 12, display: "flex", justifyContent: "space-between", borderBottom: `1px solid ${COLORS.border}20` }}>
-                <span style={{ fontWeight: 600 }}>{s.name}</span>
-                <span style={{ color: COLORS.textMuted }}>{s.team} · <span style={{ color: POS_COLORS[s.pos] }}>{s.posL}</span></span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      {p && (
-        <div style={{ background: COLORS.bg, borderRadius: 16, padding: 24, boxShadow: COLORS.shadowRaised, maxWidth: 500 }}>
-          <div style={{ display: "flex", gap: 16, marginBottom: 16, alignItems: "center" }}>
-            <img src={playerPhotoUrl(p.code)} alt={p.name} style={{ width: 72, height: 92, objectFit: "cover", borderRadius: 12, background: COLORS.border }} onError={(e) => { e.target.style.display = "none"; }} />
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>{p.name}</div>
-              <div style={{ fontSize: 12, color: COLORS.textSecondary }}>{p.teamName} · <span style={{ color: POS_COLORS[p.pos] }}>{p.posL}</span> · £{p.price}m</div>
-              <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
-                {next3.map((f, i) => <FdrMini key={i} fixture={f} tm={data.tm} />)}
-              </div>
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-            {[
-              { label: "Total Pts", value: p.pts, color: COLORS.text },
-              { label: "Form", value: p.form, color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red },
-              { label: "xGI/90", value: p.xGI90, color: COLORS.blue },
-              { label: "Own%", value: `${p.own}%`, color: COLORS.textSecondary },
-              { label: "Goals", value: p.goals, color: COLORS.green },
-              { label: "xG", value: p.xG.toFixed(1), color: COLORS.textMuted },
-              { label: "Assists", value: p.assists, color: COLORS.green },
-              { label: "xA", value: p.xA.toFixed(1), color: COLORS.textMuted },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: "center", padding: 8, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-                <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1, marginBottom: 3 }}>{s.label}</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: s.color, fontFamily: "monospace" }}>{s.value}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ textAlign: "center", marginTop: 12, fontSize: 9, color: COLORS.textMuted }}>FPL Pulse · @adnanrashid</div>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════
-   7. GW RECAP CARD
-   ══════════════════════════════════════════════ */
-function GwRecapPanel({ data }) {
-  const lastGw = data.gwA.length ? data.gwA[data.gwA.length - 1] : null;
-  if (!lastGw) return <Card><div style={{ color: COLORS.textMuted }}>No completed GW data</div></Card>;
-
-  const gwNum = lastGw.gw;
-  const avg = lastGw.avg;
-  const highest = data.glance.lastHighest;
-  const mostCap = data.glance.mostCaptained;
-
-  // Best differential: highest points among low-owned
-  const bestDiff = data.pl
-    .filter((p) => p.own < 5 && p.form > 0)
-    .sort((a, b) => b.form - a.form)[0];
-
-  return (
-    <Card>
-      <SectionTitle sub={`Auto-generated summary of Gameweek ${gwNum}`}>GW{gwNum} RECAP</SectionTitle>
-      <div style={{ background: COLORS.bg, borderRadius: 16, padding: 24, boxShadow: COLORS.shadowRaised, maxWidth: 500 }}>
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: COLORS.green }}>GW{gwNum}</div>
-          <div style={{ fontSize: 10, color: COLORS.textMuted }}>in one image</div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <div style={{ textAlign: "center", padding: 12, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-            <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1 }}>AVG SCORE</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: avg >= data.sAvg ? COLORS.green : COLORS.red }}>{avg.toFixed(1)}</div>
-          </div>
-          <div style={{ textAlign: "center", padding: 12, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-            <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1 }}>HIGHEST</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: COLORS.green }}>{highest}</div>
-          </div>
-          <div style={{ textAlign: "center", padding: 12, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-            <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1 }}>MOST CAPTAINED</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: COLORS.amber }}>{mostCap}</div>
-          </div>
-          <div style={{ textAlign: "center", padding: 12, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-            <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1 }}>BEST DIFFERENTIAL</div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: COLORS.blue }}>{bestDiff?.name || "—"}</div>
-            <div style={{ fontSize: 10, color: COLORS.textMuted }}>{bestDiff ? `${bestDiff.own}% · ${bestDiff.form} form` : ""}</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-          {data.risers[0] && (
-            <div style={{ flex: 1, textAlign: "center", padding: 10, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-              <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1 }}>TOP RISER</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.green }}>{data.risers[0].name}</div>
-            </div>
-          )}
-          {data.fallers[0] && (
-            <div style={{ flex: 1, textAlign: "center", padding: 10, borderRadius: 10, boxShadow: COLORS.shadowInset }}>
-              <div style={{ fontSize: 8, color: COLORS.textMuted, letterSpacing: 1 }}>TOP FALLER</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.red }}>{data.fallers[0].name}</div>
-            </div>
-          )}
-        </div>
-        <div style={{ textAlign: "center", marginTop: 12, fontSize: 9, color: COLORS.textMuted }}>FPL Pulse · @adnanrashid</div>
-      </div>
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════
-   8. HEAD-TO-HEAD COMPARATOR
-   ══════════════════════════════════════════════ */
-function H2HPanel({ data }) {
-  const [searchA, setSearchA] = useState("");
-  const [searchB, setSearchB] = useState("");
-  const [idA, setIdA] = useState(null);
-  const [idB, setIdB] = useState(null);
-  const [openA, setOpenA] = useState(false);
-  const [openB, setOpenB] = useState(false);
-
-  const suggest = (q) => q.length >= 2
-    ? data.pl.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6)
-    : [];
-
-  const pA = idA ? data.plMap[idA] : null;
-  const pB = idB ? data.plMap[idB] : null;
-
-  const metrics = pA && pB ? [
-    { label: "Total Pts", a: pA.pts, b: pB.pts },
-    { label: "Form", a: pA.form, b: pB.form },
-    { label: "xGI/90", a: pA.xGI90, b: pB.xGI90 },
-    { label: "Goals", a: pA.goals, b: pB.goals },
-    { label: "xG", a: +pA.xG.toFixed(1), b: +pB.xG.toFixed(1) },
-    { label: "Assists", a: pA.assists, b: pB.assists },
-    { label: "xA", a: +pA.xA.toFixed(1), b: +pB.xA.toFixed(1) },
-    { label: "BPS/90", a: pA.bps90, b: pB.bps90 },
-    { label: "PPG", a: pA.ppg, b: pB.ppg },
-    { label: "Price", a: +pA.price, b: +pB.price, lower: true },
-    { label: "Own%", a: pA.own, b: pB.own },
-  ] : [];
-
-  const winsA = metrics.filter((m) => m.lower ? m.a < m.b : m.a > m.b).length;
-  const winsB = metrics.filter((m) => m.lower ? m.b < m.a : m.b > m.a).length;
-
-  const SearchBox = ({ value, onChange, onSelect, exclude, isOpen, setOpen }) => (
-    <div style={{ position: "relative", flex: 1 }}>
-      <input type="text" placeholder="Search player..." value={value}
-        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        style={{ width: "100%", background: COLORS.bg, border: "none", borderRadius: 10, padding: "10px 14px", color: COLORS.text, fontSize: 13, boxShadow: COLORS.shadowInset, outline: "none" }}
-      />
-      {isOpen && suggest(value).length > 0 && (
-        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: COLORS.surface, borderRadius: 10, boxShadow: COLORS.shadowRaised, zIndex: 10, marginTop: 4, overflow: "hidden" }}>
-          {suggest(value).filter((s) => s.id !== exclude).map((s) => (
-            <div key={s.id} onClick={() => { onSelect(s.id); onChange(s.name); setOpen(false); }}
-              style={{ padding: "8px 14px", cursor: "pointer", fontSize: 12, borderBottom: `1px solid ${COLORS.border}20` }}>
-              <span style={{ fontWeight: 600 }}>{s.name}</span> <span style={{ color: COLORS.textMuted }}>{s.team}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  return (
-    <Card>
-      <SectionTitle sub="Compare any two players head-to-head across every key metric">HEAD-TO-HEAD COMPARATOR</SectionTitle>
-      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-        <SearchBox value={searchA} onChange={(v) => { setSearchA(v); setIdA(null); }} onSelect={setIdA} exclude={idB} isOpen={openA} setOpen={setOpenA} />
-        <div style={{ fontSize: 14, fontWeight: 800, color: COLORS.textMuted, alignSelf: "center" }}>VS</div>
-        <SearchBox value={searchB} onChange={(v) => { setSearchB(v); setIdB(null); }} onSelect={setIdB} exclude={idA} isOpen={openB} setOpen={setOpenB} />
-      </div>
-      {pA && pB && (
-        <>
-          {/* Player headers */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <img src={playerPhotoUrl(pA.code)} alt="" style={{ width: 40, height: 52, borderRadius: 8, objectFit: "cover", background: COLORS.border }} onError={(e) => { e.target.style.display = "none"; }} />
-              <div><div style={{ fontWeight: 700, fontSize: 14 }}>{pA.name}</div><div style={{ fontSize: 10, color: COLORS.textSecondary }}>{pA.team} · £{pA.price}</div></div>
-            </div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", textAlign: "right" }}>
-              <div><div style={{ fontWeight: 700, fontSize: 14 }}>{pB.name}</div><div style={{ fontSize: 10, color: COLORS.textSecondary }}>{pB.team} · £{pB.price}</div></div>
-              <img src={playerPhotoUrl(pB.code)} alt="" style={{ width: 40, height: 52, borderRadius: 8, objectFit: "cover", background: COLORS.border }} onError={(e) => { e.target.style.display = "none"; }} />
-            </div>
-          </div>
-          {/* Metrics */}
-          {metrics.map((m, i) => {
-            const aWins = m.lower ? m.a < m.b : m.a > m.b;
-            const bWins = m.lower ? m.b < m.a : m.b > m.a;
-            return (
-              <div key={i} style={{ display: "flex", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${COLORS.border}20` }}>
-                <div style={{ flex: 1, textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: aWins ? COLORS.green : COLORS.textSecondary, paddingRight: 12 }}>{m.a}</div>
-                <div style={{ width: 80, textAlign: "center", fontSize: 10, color: COLORS.textMuted, fontWeight: 600 }}>{m.label}</div>
-                <div style={{ flex: 1, textAlign: "left", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: bWins ? COLORS.green : COLORS.textSecondary, paddingLeft: 12 }}>{m.b}</div>
-              </div>
-            );
-          })}
-          {/* Verdict bar */}
-          <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", height: 28, display: "flex", boxShadow: COLORS.shadowInset }}>
-            <div style={{ width: `${(winsA / (winsA + winsB || 1)) * 100}%`, background: COLORS.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: COLORS.bg, transition: "width 0.3s" }}>
-              {winsA > winsB ? `${pA.name} wins ${winsA}-${winsB}` : winsA}
-            </div>
-            <div style={{ flex: 1, background: COLORS.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: COLORS.bg, transition: "width 0.3s" }}>
-              {winsB > winsA ? `${pB.name} wins ${winsB}-${winsA}` : winsB}
-            </div>
-          </div>
-        </>
-      )}
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════════════
    MAIN TAB COMPONENT
    ══════════════════════════════════════════════ */
 export default function TabDeepDive({ data }) {
@@ -605,9 +364,6 @@ export default function TabDeepDive({ data }) {
       {panel === 2 && <FixtureProofPanel data={data} />}
       {panel === 3 && <CaptainRoulettePanel />}
       {panel === 4 && <XgTablePanel data={data} />}
-      {panel === 5 && <PlayerCardPanel data={data} />}
-      {panel === 6 && <GwRecapPanel data={data} />}
-      {panel === 7 && <H2HPanel data={data} />}
     </div>
   );
 }
