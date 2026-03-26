@@ -200,7 +200,12 @@ export default function TabMyPulse({ data }) {
 
       {/* Squad List */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 12, fontWeight: 500 }}>STARTING XI</div>
+        <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 8, fontWeight: 500 }}>STARTING XI</div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, padding: "0 12px 6px", fontSize: 9, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
+          <span style={{ width: 36, textAlign: "right" }}>PRICE</span>
+          <span style={{ width: 32, textAlign: "right" }}>FORM</span>
+          <span style={{ width: 32, textAlign: "right" }}>SCORE</span>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {starters.map((p) => <SquadPlayer key={p.id} p={p} />)}
         </div>
