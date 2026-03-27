@@ -2,16 +2,67 @@ import { useState, useMemo } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
 import { SubBtn, PlayerTable, Card, Sparkline } from "./shared";
 import { usePlayerHistory } from "../hooks/usePlayerHistory";
+import { useXgiHistory } from "../hooks/useXgiHistory";
+
+const GW_WINDOWS = [
+  { label: "All Season", value: null },
+  { label: "Last 3 GWs", value: 3 },
+  { label: "Last 5 GWs", value: 5 },
+  { label: "Last 8 GWs", value: 8 },
+  { label: "Last 15 GWs", value: 15 },
+];
 
 export default function TabPlayerIntel({ data }) {
   const [subTab, setSubTab] = useState(0);
   const [posF, setPosF] = useState(0);
+  const [gwWindow, setGwWindow] = useState(null);
 
   const fForm = posF === 0 ? data.fPl : data.fPl.filter((p) => p.pos === posF);
 
   // Fetch sparkline data for visible top 30 form players
   const sparklineIds = useMemo(() => fForm.slice(0, 30).map((p) => p.id), [fForm]);
   const sparkData = usePlayerHistory(subTab === 0 ? sparklineIds : []);
+
+  // xGI Delta — fetch per-GW history for window filtering (only when on that panel)
+  const xgiIds = useMemo(() => data.xgiDelta.slice(0, 60).map((p) => p.id), [data.xgiDelta]);
+  const xgiHistory = useXgiHistory(subTab === 4 ? xgiIds : []);
+
+  // Recompute xGI delta metrics for the selected GW window
+  const filteredXgiDelta = useMemo(() => {
+    if (!gwWindow) return data.xgiDelta; // All Season — use pre-computed full-season data
+
+    return data.xgiDelta
+      .map((p) => {
+        const hist = xgiHistory[p.id];
+        if (!hist || hist.length === 0) return null; // still loading
+        const win = hist.slice(-gwWindow);
+        if (win.length === 0) return null;
+
+        const xG = win.reduce((s, gw) => s + parseFloat(gw.expected_goals || 0), 0);
+        const xA = win.reduce((s, gw) => s + parseFloat(gw.expected_assists || 0), 0);
+        const mins = win.reduce((s, gw) => s + (gw.minutes || 0), 0);
+        const goals = win.reduce((s, gw) => s + (gw.goals_scored || 0), 0);
+        const assists = win.reduce((s, gw) => s + (gw.assists || 0), 0);
+
+        const p90 = mins > 0 ? 90 / mins : 0;
+        const xGI = xG + xA;
+        const xGI90 = +(xGI * p90).toFixed(2);
+
+        // Scale pen contribution proportionally from full season
+        const totalGWs = hist.length || 1;
+        const windowRatio = win.length / totalGWs;
+        const penXG = p.isPenTaker ? Math.min(xG, p.penXG * windowRatio) : 0;
+        const npxG = Math.max(xG - penXG, 0);
+        const npxGI = npxG + xA;
+        const npxGI90 = +(npxGI * p90).toFixed(2);
+        const xgiDeltaVal = +(xGI90 - npxGI90).toFixed(2);
+        const depPct = xGI90 > 0 ? Math.round((xgiDeltaVal / xGI90) * 100) : 0;
+
+        return { ...p, xG: +xG.toFixed(2), xA: +xA.toFixed(2), xGI90, npxG: +npxG.toFixed(2), npxGI90, xgiDeltaVal, depPct, goals, assists };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.xgiDeltaVal - a.xgiDeltaVal);
+  }, [gwWindow, data.xgiDelta, xgiHistory]);
 
   return (
     <div>
@@ -269,8 +320,36 @@ export default function TabPlayerIntel({ data }) {
               <span style={{ color: COLORS.amber, fontWeight: 600 }}> PEN</span> = designated penalty taker.
             </div>
           </Card>
+
+          {/* GW Window filter */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+            {GW_WINDOWS.map((w) => {
+              const active = gwWindow === w.value;
+              const loading = w.value !== null && gwWindow === w.value && filteredXgiDelta.length === 0;
+              return (
+                <button
+                  key={w.label}
+                  onClick={() => setGwWindow(w.value)}
+                  style={{
+                    background: active ? COLORS.blue : COLORS.surface,
+                    color: active ? "#fff" : COLORS.textSecondary,
+                    border: `1px solid ${active ? COLORS.blue : COLORS.border}`,
+                    borderRadius: 6,
+                    padding: "4px 12px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                >
+                  {loading ? "Loading…" : w.label}
+                </button>
+              );
+            })}
+          </div>
+
           <PlayerTable
-            players={data.xgiDelta.slice(0, 30)}
+            players={filteredXgiDelta.slice(0, 30)}
             columns={[
               { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
               { header: "Player", render: (p) => (
