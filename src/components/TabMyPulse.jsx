@@ -373,7 +373,7 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
                                         <span style={{ fontWeight: 600 }}>{p.name}</span>
                                         {pk.is_captain && <span style={{ fontSize: 8, background: COLORS.amber, color: COLORS.bg, padding: "0 3px", borderRadius: 2, fontWeight: 700 }}>C</span>}
                                         {pk.is_vice_captain && <span style={{ fontSize: 8, background: COLORS.blue, color: COLORS.bg, padding: "0 3px", borderRadius: 2, fontWeight: 700 }}>V</span>}
-                                        <span style={{ fontFamily: "monospace", color: COLORS.textSecondary, fontSize: 10 }}>{p.form}</span>
+                                        <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 10, color: p.evPts >= 6 ? COLORS.green : p.evPts <= 2 ? COLORS.red : COLORS.textSecondary }}>{p.evPts}</span>
                                       </div>
                                     );
                                   })}

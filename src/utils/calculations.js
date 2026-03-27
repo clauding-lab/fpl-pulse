@@ -164,6 +164,7 @@ export function computeAll(apiData) {
       own: parseFloat(p.selected_by_percent) || 0,
       cop: p.chance_of_playing_next_round,
       pChg: p.cost_change_event || 0,
+      evPts: p.event_points || 0,
       yc: p.yellow_cards || 0,
       code: p.code,
       cs, fR, aFDR,
