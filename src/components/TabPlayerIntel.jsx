@@ -59,7 +59,7 @@ export default function TabPlayerIntel({ data }) {
         const xgiDeltaVal = +(xGI90 - npxGI90).toFixed(2);
         const depPct = xGI90 > 0 ? Math.round((xgiDeltaVal / xGI90) * 100) : 0;
 
-        return { ...p, xG: +xG.toFixed(2), xA: +xA.toFixed(2), xGI90, npxG: +npxG.toFixed(2), npxGI90, xgiDeltaVal, depPct, goals, assists, pts };
+        return { ...p, xG: +xG.toFixed(2), xA: +xA.toFixed(2), xGI90, npxG: +npxG.toFixed(2), npxGI90, xgiDeltaVal, depPct, goals, assists, pts, mins };
       })
       .filter(Boolean)
       .sort((a, b) => b.xgiDeltaVal - a.xgiDeltaVal);
@@ -371,17 +371,18 @@ export default function TabPlayerIntel({ data }) {
               {
                 header: "xPts",
                 render: (p) => {
-                  // Expected pts: xG * goal_value_by_pos + xA * 3
+                  // xPts = appearance pts + xGoal pts + xAssist pts
+                  // Appearance: mins/90 × 2 (2pts per full game played)
                   // FPL goal values: GK/DEF=6, MID=5, FWD=4
                   const gv = p.pos <= 2 ? 6 : p.pos === 3 ? 5 : 4;
-                  return +(p.xG * gv + p.xA * 3).toFixed(1);
+                  return Math.round((p.mins / 90) * 2 + p.xG * gv + p.xA * 3);
                 },
                 style: (p) => {
                   const gv = p.pos <= 2 ? 6 : p.pos === 3 ? 5 : 4;
-                  const xPts = +(p.xG * gv + p.xA * 3).toFixed(1);
+                  const xPts = Math.round((p.mins / 90) * 2 + p.xG * gv + p.xA * 3);
                   return { fontWeight: 700, fontFamily: "monospace", color: p.pts > xPts ? COLORS.green : p.pts < xPts ? COLORS.red : COLORS.text };
                 },
-                title: "Expected pts from xG & xA (xG×goal_value + xA×3)",
+                title: "Expected pts: appearance pts (mins/90 × 2) + xG × goal_value + xA × 3",
               },
               { header: "xGI/90", render: (p) => p.xGI90, style: () => ({ fontFamily: "monospace", fontWeight: 600 }) },
               { header: "npxGI/90", render: (p) => p.npxGI90, style: () => ({ fontFamily: "monospace", color: COLORS.green, fontWeight: 600 }) },
