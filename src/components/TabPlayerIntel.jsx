@@ -19,13 +19,13 @@ export default function TabPlayerIntel({ data }) {
 
   const fForm = posF === 0 ? data.fPl : data.fPl.filter((p) => p.pos === posF);
 
-  // Fetch sparkline data for visible top 30 form players
+  // Fetch sparkline data for visible top 30 form players (Form Tracker = subTab 1)
   const sparklineIds = useMemo(() => fForm.slice(0, 30).map((p) => p.id), [fForm]);
-  const sparkData = usePlayerHistory(subTab === 0 ? sparklineIds : []);
+  const sparkData = usePlayerHistory(subTab === 1 ? sparklineIds : []);
 
-  // xGI Delta — fetch per-GW history for window filtering (only when on that panel)
+  // xGI Delta — fetch per-GW history for window filtering (xGI Delta = subTab 0)
   const xgiIds = useMemo(() => data.xgiDelta.slice(0, 60).map((p) => p.id), [data.xgiDelta]);
-  const xgiHistory = useXgiHistory(subTab === 4 ? xgiIds : []);
+  const xgiHistory = useXgiHistory(subTab === 0 ? xgiIds : []);
 
   // Recompute xGI delta metrics for the selected GW window
   const filteredXgiDelta = useMemo(() => {
@@ -76,13 +76,13 @@ export default function TabPlayerIntel({ data }) {
           paddingBottom: 2,
         }}
       >
-        {["Form Tracker", "Floor Kings", "Haul Hunters", "Risk Monitor", "xGI Delta", "Shot Stoppers"].map((s, i) => (
+        {["xGI Delta", "Form Tracker", "Floor Kings", "Haul Hunters", "Risk Monitor", "Shot Stoppers"].map((s, i) => (
           <SubBtn key={i} label={s} active={subTab === i} onClick={() => setSubTab(i)} />
         ))}
       </div>
 
       {/* Form Tracker */}
-      {subTab === 0 && (
+      {subTab === 1 && (
         <div>
           <div style={{ display: "flex", gap: 4, marginBottom: 14 }}>
             {[
@@ -169,7 +169,7 @@ export default function TabPlayerIntel({ data }) {
       )}
 
       {/* Floor Kings */}
-      {subTab === 1 && (
+      {subTab === 2 && (
         <div>
           <p style={{ color: COLORS.textSecondary, fontSize: 12, marginBottom: 14 }}>
             Consistent 3-7 point producers. Low variance, high floor.
@@ -220,7 +220,7 @@ export default function TabPlayerIntel({ data }) {
       )}
 
       {/* Haul Hunters */}
-      {subTab === 2 && (
+      {subTab === 3 && (
         <div>
           <p style={{ color: COLORS.textSecondary, fontSize: 12, marginBottom: 14 }}>
             Explosive ceiling players. When they haul, they haul big.
@@ -271,7 +271,7 @@ export default function TabPlayerIntel({ data }) {
       )}
 
       {/* Risk Monitor */}
-      {subTab === 3 && (
+      {subTab === 4 && (
         <div>
           <p style={{ color: COLORS.textSecondary, fontSize: 12, marginBottom: 14 }}>
             Popular players showing warning signals.
@@ -311,7 +311,7 @@ export default function TabPlayerIntel({ data }) {
       )}
 
       {/* xGI Delta — Penalty Dependency */}
-      {subTab === 4 && (
+      {subTab === 0 && (
         <div>
           <Card style={{ marginBottom: 14, padding: "12px 16px" }}>
             <div style={{ fontSize: 12, color: COLORS.textSecondary, lineHeight: 1.7 }}>
@@ -361,6 +361,27 @@ export default function TabPlayerIntel({ data }) {
               { header: "Pos", render: (p) => <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 10 }}>{p.posL}</span> },
               { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
               { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
+              {
+                header: "Pts",
+                render: (p) => p.pts,
+                style: () => ({ fontWeight: 700, fontFamily: "monospace" }),
+                title: "Actual FPL points this season",
+              },
+              {
+                header: "xPts",
+                render: (p) => {
+                  // Expected pts: xG * goal_value_by_pos + xA * 3
+                  // FPL goal values: GK/DEF=6, MID=5, FWD=4
+                  const gv = p.pos <= 2 ? 6 : p.pos === 3 ? 5 : 4;
+                  return +(p.xG * gv + p.xA * 3).toFixed(1);
+                },
+                style: (p) => {
+                  const gv = p.pos <= 2 ? 6 : p.pos === 3 ? 5 : 4;
+                  const xPts = +(p.xG * gv + p.xA * 3).toFixed(1);
+                  return { fontWeight: 700, fontFamily: "monospace", color: p.pts > xPts ? COLORS.green : p.pts < xPts ? COLORS.red : COLORS.text };
+                },
+                title: "Expected pts from xG & xA (xG×goal_value + xA×3)",
+              },
               { header: "xGI/90", render: (p) => p.xGI90, style: () => ({ fontFamily: "monospace", fontWeight: 600 }) },
               { header: "npxGI/90", render: (p) => p.npxGI90, style: () => ({ fontFamily: "monospace", color: COLORS.green, fontWeight: 600 }) },
               { header: "Delta", render: (p) => p.xgiDeltaVal > 0 ? `+${p.xgiDeltaVal}` : p.xgiDeltaVal, style: (p) => ({ fontFamily: "monospace", fontWeight: 800, color: p.xgiDeltaVal >= 0.15 ? COLORS.red : p.xgiDeltaVal >= 0.05 ? COLORS.amber : COLORS.green }) },
