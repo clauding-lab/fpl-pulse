@@ -315,11 +315,19 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
             <div style={{ fontSize: 10, color: COLORS.textMuted }}>{standings.standings?.results?.length || 0} managers · tap row to expand</div>
           </div>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
+              <colgroup>
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "7%" }} />
+                <col style={{ width: "35%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "13%" }} />
+              </colgroup>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
                   {["#", "", "Manager", "Team", "GW", "Total"].map((h) => (
-                    <th key={h} style={{ padding: "6px 3px", textAlign: h === "#" || h === "" || h === "GW" || h === "Total" ? "center" : "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, letterSpacing: 0.5 }}>{h}</th>
+                    <th key={h} style={{ padding: "6px 2px", textAlign: h === "Manager" || h === "Team" ? "left" : "center", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, letterSpacing: 0.5 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -337,12 +345,12 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
                           cursor: "pointer",
                         }}
                       >
-                        <td style={{ padding: "8px 3px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: isMe ? COLORS.green : COLORS.text, width: 24 }}>{s.rank}</td>
-                        <td style={{ padding: "8px 0", textAlign: "center", width: 20 }}><RankChange rank={s.rank} lastRank={s.last_rank} /></td>
-                        <td style={{ padding: "8px 3px", fontWeight: isMe ? 700 : 400, fontSize: 12, color: isMe ? COLORS.green : COLORS.text, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.player_name}</td>
-                        <td style={{ padding: "8px 3px", color: COLORS.textSecondary, fontSize: 10, maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
-                        <td style={{ padding: "8px 3px", textAlign: "center", fontFamily: "monospace", fontWeight: 600, fontSize: 11, width: 30 }}>{s.event_total}</td>
-                        <td style={{ padding: "8px 3px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: isMe ? COLORS.green : COLORS.text, width: 36 }}>{s.total}</td>
+                        <td style={{ padding: "8px 2px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</td>
+                        <td style={{ padding: "8px 0", textAlign: "center" }}><RankChange rank={s.rank} lastRank={s.last_rank} /></td>
+                        <td style={{ padding: "8px 2px", fontWeight: isMe ? 700 : 400, fontSize: 11, color: isMe ? COLORS.green : COLORS.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.player_name}</td>
+                        <td style={{ padding: "8px 2px", color: COLORS.textSecondary, fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
+                        <td style={{ padding: "8px 2px", textAlign: "center", fontFamily: "monospace", fontWeight: 600, fontSize: 11 }}>{s.event_total}</td>
+                        <td style={{ padding: "8px 2px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
                       </tr>
                       {isExpanded && (
                         <tr>
