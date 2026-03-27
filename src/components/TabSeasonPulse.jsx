@@ -181,8 +181,43 @@ function DualBarChart({ gwA, sAvg, top100kAvgs }) {
   );
 }
 
+function PosFilter({ value, onChange }) {
+  const opts = [
+    { l: "ALL", v: 0 },
+    { l: "GK", v: 1 },
+    { l: "DEF", v: 2 },
+    { l: "MID", v: 3 },
+    { l: "FWD", v: 4 },
+  ];
+  return (
+    <div style={{ display: "flex", gap: 3 }}>
+      {opts.map((o) => (
+        <button
+          key={o.v}
+          onClick={() => onChange(o.v)}
+          style={{
+            background: value === o.v ? COLORS.green : COLORS.surface,
+            color: value === o.v ? COLORS.bg : COLORS.textSecondary,
+            border: `1px solid ${value === o.v ? COLORS.green : COLORS.border}`,
+            borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 600, cursor: "pointer",
+          }}
+        >
+          {o.l}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function filterByPos(arr, pos) {
+  if (!pos) return arr;
+  return arr.filter((p) => p.pos === pos || p.posN === pos);
+}
+
 export default function TabSeasonPulse({ data }) {
   const { glance, gwA, sAvg, defcon, seasonValue, formValue, tpl, tH, risers, fallers, tm, uf } = data;
+  const [bestValPos, setBestValPos] = useState(0);
+  const [smartPos, setSmartPos] = useState(0);
 
   // Top 100K GW averages
   const [top100kAvgs, setTop100kAvgs] = useState(null);
@@ -392,13 +427,16 @@ export default function TabSeasonPulse({ data }) {
 
       {/* Panel 5: Best Value */}
       <Card>
-        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 14, fontWeight: 700 }}>BEST VALUE — POINTS PER MILLION</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+          <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>BEST VALUE — POINTS PER MILLION</div>
+          <PosFilter value={bestValPos} onChange={setBestValPos} />
+        </div>
         <SideBySide
           left={
             <>
               <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.text, marginBottom: 8 }}>Season Value Kings</div>
               <PlayerTable
-                players={seasonValue}
+                players={filterByPos(seasonValue, bestValPos)}
                 columns={[
                   { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
                   { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
@@ -415,7 +453,7 @@ export default function TabSeasonPulse({ data }) {
             <>
               <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.text, marginBottom: 8 }}>Recent Form Value</div>
               <PlayerTable
-                players={formValue}
+                players={filterByPos(formValue, bestValPos)}
                 columns={[
                   { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
                   { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
@@ -436,13 +474,12 @@ export default function TabSeasonPulse({ data }) {
 
       {/* Panel 4: Smart Money */}
       <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
           <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>SMART MONEY — TOP 500 VS ALL MANAGERS</div>
-          {smartMoney && (
-            <div style={{ fontSize: 9, color: COLORS.textMuted }}>
-              {smartMoney.managersScanned} managers scanned
-            </div>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {smartMoney && <div style={{ fontSize: 9, color: COLORS.textMuted }}>{smartMoney.managersScanned} managers scanned</div>}
+            <PosFilter value={smartPos} onChange={setSmartPos} />
+          </div>
         </div>
         {smLoading && (
           <div style={{ textAlign: "center", padding: "24px 0", color: COLORS.textMuted, fontSize: 12 }}>
@@ -460,7 +497,7 @@ export default function TabSeasonPulse({ data }) {
               <>
                 <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.green, marginBottom: 8 }}>Smart Buys — Elite own more</div>
                 <PlayerTable
-                  players={smartMoney.smartBuys}
+                  players={filterByPos(smartMoney.smartBuys, smartPos)}
                   columns={[
                     { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
                     { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
@@ -478,7 +515,7 @@ export default function TabSeasonPulse({ data }) {
               <>
                 <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.red, marginBottom: 8 }}>Casual Traps — Field over-owns</div>
                 <PlayerTable
-                  players={smartMoney.casualTraps}
+                  players={filterByPos(smartMoney.casualTraps, smartPos)}
                   columns={[
                     { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
                     { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
