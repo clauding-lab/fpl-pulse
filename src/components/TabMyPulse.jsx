@@ -166,7 +166,6 @@ function SquadPlayer({ p, tm }) {
         <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 28, textAlign: "right" }}>
           {p.lastGwPts != null ? p.lastGwPts : "—"}
         </span>
-        <span style={{ fontFamily: "monospace", width: 34, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
         <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
           {p.form}
         </span>
@@ -372,7 +371,7 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
                                         <span style={{ fontWeight: 600 }}>{p.name}</span>
                                         {pk.is_captain && <span style={{ fontSize: 8, background: COLORS.amber, color: COLORS.bg, padding: "0 3px", borderRadius: 2, fontWeight: 700 }}>C</span>}
                                         {pk.is_vice_captain && <span style={{ fontSize: 8, background: COLORS.blue, color: COLORS.bg, padding: "0 3px", borderRadius: 2, fontWeight: 700 }}>V</span>}
-                                        <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 10, color: p.evPts >= 6 ? COLORS.green : p.evPts <= 2 ? COLORS.red : COLORS.textSecondary }}>{p.evPts}</span>
+                                        {(() => { const pts = pk.is_captain ? p.evPts * 2 : p.evPts; return <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 10, color: pts >= 6 ? COLORS.green : pts <= 2 ? COLORS.red : COLORS.textSecondary }}>{pts}</span>; })()}
                                       </div>
                                     );
                                   })}
@@ -634,7 +633,6 @@ export default function TabMyPulse({ data }) {
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 7, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 0.5 }}>
           <span style={{ width: 30, textAlign: "right" }}>Own%</span>
           <span style={{ width: 28, textAlign: "right" }}>GW Pts</span>
-          <span style={{ width: 34, textAlign: "right" }}>Total Pts</span>
           <span style={{ width: 22, textAlign: "right" }}>Form</span>
           <span style={{ width: 120, textAlign: "center" }}>Next 5 Fixtures</span>
         </div>
