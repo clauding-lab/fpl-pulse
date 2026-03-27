@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
 import { Card, StatCard } from "./shared";
 import { fetchSquad } from "../utils/api";
@@ -405,8 +405,10 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW }) {
   );
 }
 
+const SAVED_TEAM_KEY = "fpl_pulse_team_id";
+
 export default function TabMyPulse({ data }) {
-  const [teamId, setTeamId] = useState("");
+  const [teamId, setTeamId] = useState(() => localStorage.getItem(SAVED_TEAM_KEY) || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -415,6 +417,7 @@ export default function TabMyPulse({ data }) {
   const [mySubTab, setMySubTab] = useState(0);
   const shareRef = useRef(null);
   const [exporting, setExporting] = useState(false);
+  const autoFetched = useRef(false);
 
   const handleShare = useCallback(async () => {
     if (!shareRef.current) return;
@@ -448,11 +451,34 @@ export default function TabMyPulse({ data }) {
     }
     setManagerName(`${result.entry.player_first_name} ${result.entry.player_last_name}`);
     setEntryData(result.entry);
+    localStorage.setItem(SAVED_TEAM_KEY, teamId.trim());
     const lastGwEntry = result.history?.current?.length ? result.history.current[result.history.current.length - 1] : null;
     setAnalysis({ ...analyzeSquad(result.picks, data, result.history), lastGwEntry });
     setMySubTab(0);
     setLoading(false);
   };
+
+  // Auto-fetch saved team on mount
+  useEffect(() => {
+    if (autoFetched.current || analysis) return;
+    const saved = localStorage.getItem(SAVED_TEAM_KEY);
+    if (saved && data.plMap) {
+      autoFetched.current = true;
+      setTeamId(saved);
+      // Trigger fetch
+      (async () => {
+        setLoading(true);
+        const result = await fetchSquad(saved, data.lastFinishedGW || data.gw);
+        if (result) {
+          setManagerName(`${result.entry.player_first_name} ${result.entry.player_last_name}`);
+          setEntryData(result.entry);
+          const lastGwEntry = result.history?.current?.length ? result.history.current[result.history.current.length - 1] : null;
+          setAnalysis({ ...analyzeSquad(result.picks, data, result.history), lastGwEntry });
+        }
+        setLoading(false);
+      })();
+    }
+  }, [data.plMap]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!analysis) {
     return (
@@ -503,7 +529,7 @@ export default function TabMyPulse({ data }) {
           <button onClick={handleShare} disabled={exporting} style={{ background: COLORS.green, color: COLORS.bg, border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: exporting ? "wait" : "pointer", opacity: exporting ? 0.6 : 1 }}>
             {exporting ? "Exporting..." : "📸 Share My Pulse"}
           </button>
-          <button onClick={() => { setAnalysis(null); setEntryData(null); }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
+          <button onClick={() => { setAnalysis(null); setEntryData(null); localStorage.removeItem(SAVED_TEAM_KEY); autoFetched.current = false; }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
             Change Team
           </button>
         </div>
