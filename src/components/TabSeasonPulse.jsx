@@ -81,14 +81,41 @@ function PitchFormation({ tpl }) {
     </div>
   );
 
+  const W = "rgba(255,255,255,0.18)";
   return (
     <div style={{
-      background: "linear-gradient(180deg, #1a472a 0%, #2d6a3e 40%, #1a472a 100%)",
-      borderRadius: 12, padding: "24px 16px", position: "relative", overflow: "hidden",
+      background: "linear-gradient(180deg, #1a5c2e 0%, #237a3c 30%, #1a5c2e 60%, #237a3c 100%)",
+      borderRadius: 12, padding: "28px 16px 20px", position: "relative", overflow: "hidden",
     }}>
-      <div style={{ position: "absolute", top: "50%", left: "10%", right: "10%", height: 1, background: "rgba(255,255,255,0.15)" }} />
-      <div style={{ position: "absolute", top: "35%", left: "25%", right: "25%", bottom: "35%", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6 }} />
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, position: "relative", zIndex: 1 }}>
+      {/* Pitch outline */}
+      <div style={{ position: "absolute", top: 8, left: 8, right: 8, bottom: 8, border: `2px solid ${W}`, borderRadius: 4 }} />
+      {/* Halfway line */}
+      <div style={{ position: "absolute", top: "50%", left: 8, right: 8, height: 0, borderTop: `2px solid ${W}` }} />
+      {/* Centre circle */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", width: 80, height: 80, transform: "translate(-50%, -50%)", borderRadius: "50%", border: `2px solid ${W}` }} />
+      {/* Centre spot */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", width: 6, height: 6, transform: "translate(-50%, -50%)", borderRadius: "50%", background: W }} />
+      {/* Penalty box (bottom half = attacking end) */}
+      <div style={{ position: "absolute", bottom: 8, left: "50%", width: "50%", height: "22%", transform: "translateX(-50%)", borderTop: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
+      {/* 6-yard box */}
+      <div style={{ position: "absolute", bottom: 8, left: "50%", width: "24%", height: "10%", transform: "translateX(-50%)", borderTop: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
+      {/* Penalty arc (top of penalty box) */}
+      <div style={{ position: "absolute", bottom: "28%", left: "50%", width: 50, height: 26, transform: "translateX(-50%)", borderRadius: "50% 50% 0 0", borderTop: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
+      {/* Defensive half penalty box (top) */}
+      <div style={{ position: "absolute", top: 8, left: "50%", width: "50%", height: "22%", transform: "translateX(-50%)", borderBottom: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
+      {/* Defensive 6-yard box */}
+      <div style={{ position: "absolute", top: 8, left: "50%", width: "24%", height: "10%", transform: "translateX(-50%)", borderBottom: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
+      {/* Corner arcs */}
+      <div style={{ position: "absolute", top: 2, left: 2, width: 16, height: 16, borderBottomRightRadius: 16, borderRight: `2px solid ${W}`, borderBottom: `2px solid ${W}` }} />
+      <div style={{ position: "absolute", top: 2, right: 2, width: 16, height: 16, borderBottomLeftRadius: 16, borderLeft: `2px solid ${W}`, borderBottom: `2px solid ${W}` }} />
+      <div style={{ position: "absolute", bottom: 2, left: 2, width: 16, height: 16, borderTopRightRadius: 16, borderRight: `2px solid ${W}`, borderTop: `2px solid ${W}` }} />
+      <div style={{ position: "absolute", bottom: 2, right: 2, width: 16, height: 16, borderTopLeftRadius: 16, borderLeft: `2px solid ${W}`, borderTop: `2px solid ${W}` }} />
+      {/* Grass stripe effect */}
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+        <div key={i} style={{ position: "absolute", top: `${i * 12.5}%`, left: 0, right: 0, height: "6.25%", background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "transparent" }} />
+      ))}
+      {/* Players */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 22, position: "relative", zIndex: 1 }}>
         <Row players={fwd} />
         <Row players={mid} />
         <Row players={def} />
