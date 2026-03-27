@@ -103,8 +103,6 @@ function PitchFormation({ tpl }) {
       <div style={{ position: "absolute", bottom: 8, left: "50%", width: "50%", height: "22%", transform: "translateX(-50%)", borderTop: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
       {/* 6-yard box */}
       <div style={{ position: "absolute", bottom: 8, left: "50%", width: "24%", height: "10%", transform: "translateX(-50%)", borderTop: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
-      {/* Penalty arc (top of penalty box) */}
-      <div style={{ position: "absolute", bottom: "28%", left: "50%", width: 50, height: 26, transform: "translateX(-50%)", borderRadius: "50% 50% 0 0", borderTop: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
       {/* Defensive half penalty box (top) */}
       <div style={{ position: "absolute", top: 8, left: "50%", width: "50%", height: "22%", transform: "translateX(-50%)", borderBottom: `2px solid ${W}`, borderLeft: `2px solid ${W}`, borderRight: `2px solid ${W}` }} />
       {/* Defensive 6-yard box */}
