@@ -319,7 +319,7 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
               <thead>
                 <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
                   {["#", "", "Manager", "Team", "GW", "Total"].map((h) => (
-                    <th key={h} style={{ padding: "8px 6px", textAlign: h === "#" || h === "" || h === "GW" || h === "Total" ? "center" : "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10, letterSpacing: 1 }}>{h}</th>
+                    <th key={h} style={{ padding: "6px 3px", textAlign: h === "#" || h === "" || h === "GW" || h === "Total" ? "center" : "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, letterSpacing: 0.5 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -337,12 +337,12 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
                           cursor: "pointer",
                         }}
                       >
-                        <td style={{ padding: "10px 6px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</td>
-                        <td style={{ padding: "10px 2px", textAlign: "center", width: 28 }}><RankChange rank={s.rank} lastRank={s.last_rank} /></td>
-                        <td style={{ padding: "10px 6px", fontWeight: isMe ? 700 : 400, color: isMe ? COLORS.green : COLORS.text }}>{s.player_name}</td>
-                        <td style={{ padding: "10px 6px", color: COLORS.textSecondary, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
-                        <td style={{ padding: "10px 6px", textAlign: "center", fontFamily: "monospace", fontWeight: 600 }}>{s.event_total}</td>
-                        <td style={{ padding: "10px 6px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
+                        <td style={{ padding: "8px 3px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: isMe ? COLORS.green : COLORS.text, width: 24 }}>{s.rank}</td>
+                        <td style={{ padding: "8px 0", textAlign: "center", width: 20 }}><RankChange rank={s.rank} lastRank={s.last_rank} /></td>
+                        <td style={{ padding: "8px 3px", fontWeight: isMe ? 700 : 400, fontSize: 12, color: isMe ? COLORS.green : COLORS.text, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.player_name}</td>
+                        <td style={{ padding: "8px 3px", color: COLORS.textSecondary, fontSize: 10, maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
+                        <td style={{ padding: "8px 3px", textAlign: "center", fontFamily: "monospace", fontWeight: 600, fontSize: 11, width: 30 }}>{s.event_total}</td>
+                        <td style={{ padding: "8px 3px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: isMe ? COLORS.green : COLORS.text, width: 36 }}>{s.total}</td>
                       </tr>
                       {isExpanded && (
                         <tr>
