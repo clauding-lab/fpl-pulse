@@ -57,8 +57,8 @@ function RankChart({ rankHistory }) {
         </div>
       </div>
       <div style={{ display: "flex", gap: 14, fontSize: 9, color: COLORS.textMuted, marginBottom: 4 }}>
-        <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: COLORS.green, marginRight: 4, verticalAlign: "middle" }} />GW Points (bars)</span>
-        <span><span style={{ display: "inline-block", width: 10, height: 3, borderRadius: 1, background: COLORS.amber, marginRight: 4, verticalAlign: "middle" }} />Overall Rank (line)</span>
+        <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#3b82f6", marginRight: 4, verticalAlign: "middle" }} />GW Points (bars)</span>
+        <span><span style={{ display: "inline-block", width: 10, height: 3, borderRadius: 1, background: "#ef4444", marginRight: 4, verticalAlign: "middle" }} />Overall Rank (line)</span>
       </div>
 
       {/* Fixed-height tooltip */}
@@ -66,9 +66,9 @@ function RankChart({ rankHistory }) {
         {hovered && (
           <div style={{ display: "flex", gap: 16, fontSize: 11, fontWeight: 600, color: COLORS.text }}>
             <span>GW{hovered.gw}</span>
-            <span>Pts: <span style={{ fontFamily: "monospace", color: COLORS.green }}>{hovered.pts}</span></span>
-            <span>Rank: <span style={{ fontFamily: "monospace", color: COLORS.amber }}>{hovered.rank.toLocaleString()}</span></span>
-            <span>Total: <span style={{ fontFamily: "monospace" }}>{hovered.total.toLocaleString()}</span></span>
+            <span>Pts: <span style={{ fontFamily: "monospace", color: "#3b82f6" }}>{hovered.pts}</span></span>
+            <span>Rank: <span style={{ fontFamily: "monospace", color: "#ef4444" }}>{hovered.rank.toLocaleString()}</span></span>
+            <span>Total: <span style={{ fontFamily: "monospace", color: "#22c55e" }}>{hovered.total.toLocaleString()}</span></span>
           </div>
         )}
       </div>
@@ -92,7 +92,7 @@ function RankChart({ rankHistory }) {
               >
                 <div style={{
                   width: "65%", maxWidth: 14, height: barH, borderRadius: "3px 3px 0 0",
-                  background: isHov ? COLORS.green : `${COLORS.green}60`,
+                  background: isHov ? "#3b82f6" : "#3b82f660",
                   opacity: hovIdx !== null && !isHov ? 0.3 : 1,
                 }} />
               </div>
@@ -109,7 +109,7 @@ function RankChart({ rankHistory }) {
           <polyline
             points={linePoints}
             fill="none"
-            stroke={COLORS.amber}
+            stroke="#ef4444"
             strokeWidth="3"
             vectorEffect="non-scaling-stroke"
             strokeLinejoin="round"
@@ -120,7 +120,7 @@ function RankChart({ rankHistory }) {
             const x = (hovIdx + 0.5) * barW;
             const yPct = (rankHistory[hovIdx].rank - minRank) / rankRange;
             const y = 8 + yPct * (H - 20);
-            return <circle cx={x} cy={y} r="5" fill={COLORS.amber} stroke={COLORS.bg} strokeWidth="2" vectorEffect="non-scaling-stroke" />;
+            return <circle cx={x} cy={y} r="5" fill="#22c55e" stroke={COLORS.bg} strokeWidth="2" vectorEffect="non-scaling-stroke" />;
           })()}
         </svg>
       </div>
