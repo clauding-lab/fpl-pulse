@@ -383,7 +383,7 @@ export default function TabSeasonPulse({ data }) {
           DEF/GK: 10+ defensive actions per game = 2 FPL pts · MID/FWD: 12+ = 2 FPL pts (capped at 2/game)
         </div>
         <PlayerTable
-          players={defconMerged.slice(0, 15)}
+          players={defconMerged.slice(0, 10)}
           columns={[
             { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
             { header: "Player", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
