@@ -561,21 +561,66 @@ export default function TabMyPulse({ data }) {
       {/* Screenshot Zone */}
       <div ref={shareRef} style={{ background: COLORS.bg, padding: 4 }}>
 
-      {/* Health Score + Stats */}
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
-        {lastGwEntry && (
-          <StatCard
-            label={`GW${lastGwEntry.event} SCORE`}
-            value={lastGwEntry.points}
-            sub={lastGwEntry.event_transfers_cost > 0 ? `(-${lastGwEntry.event_transfers_cost} hits)` : null}
-            color={lastGwEntry.points >= 60 ? COLORS.green : lastGwEntry.points >= 40 ? COLORS.amber : COLORS.red}
-          />
-        )}
-        <StatCard label="SQUAD HEALTH" value={healthScore} sub="/ 100" color={healthScore >= 70 ? COLORS.green : healthScore >= 45 ? COLORS.amber : COLORS.red} />
-        <StatCard label="GREENS" value={squad.filter((p) => p.status === "green").length} color={COLORS.green} />
-        <StatCard label="AMBERS" value={squad.filter((p) => p.status === "amber").length} color={COLORS.amber} />
-        <StatCard label="REDS" value={squad.filter((p) => p.status === "red").length} color={COLORS.red} />
-      </div>
+      {/* Rank Details Panel */}
+      {(() => {
+        const curr = rankHistory?.length ? rankHistory[rankHistory.length - 1] : null;
+        const prev = rankHistory?.length >= 2 ? rankHistory[rankHistory.length - 2] : null;
+        const rankDelta = prev && curr ? prev.rank - curr.rank : 0; // positive = improved
+        const pctImprove = prev && prev.rank > 0 ? ((rankDelta / prev.rank) * 100) : 0;
+        const gwAvg = data.gwA?.length ? data.gwA[data.gwA.length - 1]?.avg || 0 : 0;
+        const safety = curr ? curr.pts - gwAvg : 0;
+        const bench = lastGwEntry?.points_on_bench || 0;
+        const teamValue = lastGwEntry ? (lastGwEntry.value / 10).toFixed(1) : "—";
+        const bank = lastGwEntry ? (lastGwEntry.bank / 10).toFixed(1) : "—";
+
+        function fmtRank(r) {
+          if (!r) return "—";
+          if (r >= 1000000) return `${(r / 1000000).toFixed(1)}M`;
+          if (r >= 1000) return `${Math.round(r / 1000)}K`;
+          return r.toLocaleString();
+        }
+
+        return (
+          <div style={{ marginBottom: 20 }}>
+            {/* Rank hero */}
+            <Card style={{ textAlign: "center", padding: "20px 16px", marginBottom: 12, border: `1px solid ${rankDelta >= 0 ? COLORS.green : COLORS.red}30`, background: `${rankDelta >= 0 ? COLORS.green : COLORS.red}06` }}>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: COLORS.textSecondary, marginBottom: 6, fontWeight: 600 }}>OVERALL RANK</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                <span style={{ fontSize: 32, fontWeight: 800, fontFamily: "monospace", color: COLORS.text }}>{curr ? curr.rank.toLocaleString() : "—"}</span>
+                {rankDelta !== 0 && (
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, fontSize: 13, fontWeight: 700,
+                    background: rankDelta > 0 ? `${COLORS.green}18` : `${COLORS.red}18`,
+                    color: rankDelta > 0 ? COLORS.green : COLORS.red,
+                  }}>
+                    {rankDelta > 0 ? "▲" : "▼"} {fmtRank(Math.abs(rankDelta))}
+                  </span>
+                )}
+              </div>
+              {prev && rankDelta !== 0 && (
+                <div style={{ fontSize: 11, color: COLORS.textSecondary, marginTop: 4 }}>
+                  {rankDelta > 0 ? "▲" : "▼"} {Math.abs(pctImprove).toFixed(1)}% {rankDelta > 0 ? "improvement" : "drop"} from {prev.rank.toLocaleString()}
+                </div>
+              )}
+              {curr?.percentile_rank != null && (
+                <div style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 2 }}>Top {100 - (lastGwEntry?.percentile_rank || curr.percentile_rank || 50)}%</div>
+              )}
+            </Card>
+
+            {/* Stat grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
+              <StatCard label="GW SCORE" value={curr?.pts || "—"} color={curr && curr.pts >= 60 ? COLORS.green : curr && curr.pts >= 40 ? COLORS.amber : COLORS.red} />
+              <StatCard label="TOTAL" value={curr ? curr.total.toLocaleString() : "—"} />
+              <StatCard label="BENCH PTS" value={bench} color={bench >= 10 ? COLORS.amber : COLORS.textSecondary} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              <StatCard label="SAFETY" value={safety >= 0 ? `+${Math.round(safety)}` : Math.round(safety)} sub="vs GW avg" color={safety >= 0 ? COLORS.green : COLORS.red} />
+              <StatCard label="TEAM VALUE" value={`£${teamValue}`} />
+              <StatCard label="IN THE BANK" value={`£${bank}`} />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Overall Rank Chart */}
       <RankChart rankHistory={rankHistory} />
