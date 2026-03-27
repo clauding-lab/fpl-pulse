@@ -164,15 +164,15 @@ function SquadPlayer({ p, tm }) {
       <div style={{ display: "flex", gap: 6, fontSize: 11, alignItems: "center", flexShrink: 0 }}>
         <span style={{ color: COLORS.textSecondary, width: 28, textAlign: "center", fontSize: 10 }}>{p.team}</span>
         <span style={{ fontFamily: "monospace", width: 30, textAlign: "right", color: COLORS.textSecondary }}>{p.own}%</span>
-        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 24, textAlign: "right" }}>
+        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 28, textAlign: "right" }}>
           {p.lastGwPts != null ? p.lastGwPts : "—"}
         </span>
-        <span style={{ fontFamily: "monospace", width: 30, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
-        <span style={{ fontFamily: "monospace", width: 24, textAlign: "right", color: COLORS.textSecondary }}>{p.ppg}</span>
+        <span style={{ fontFamily: "monospace", width: 34, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
+        <span style={{ fontFamily: "monospace", width: 28, textAlign: "right", color: COLORS.textSecondary }}>{p.ppg}</span>
         <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
           {p.form}
         </span>
-        <span style={{ fontFamily: "monospace", width: 22, textAlign: "right", color: COLORS.amber }}>{p.bonus}</span>
+        <span style={{ fontFamily: "monospace", width: 26, textAlign: "right", color: COLORS.amber }}>{p.bonus}</span>
         <div style={{ display: "flex", gap: 2 }}>
           {(p.next5 || []).map((f, i) => (
             <div key={i} title={`GW${f.gw}: ${tm?.[f.opp]?.short_name || "?"} ${f.home ? "(H)" : "(A)"}`} style={{
@@ -634,15 +634,15 @@ export default function TabMyPulse({ data }) {
       {/* Squad List */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 8, fontWeight: 700 }}>STARTING XI</div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 7, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
-          <span style={{ width: 28, textAlign: "center" }}>TEAM</span>
-          <span style={{ width: 30, textAlign: "right" }}>OWN%</span>
-          <span style={{ width: 24, textAlign: "right" }}>GW PTS</span>
-          <span style={{ width: 30, textAlign: "right" }}>TOTAL</span>
-          <span style={{ width: 24, textAlign: "right" }}>AVG</span>
-          <span style={{ width: 22, textAlign: "right" }}>FORM</span>
-          <span style={{ width: 22, textAlign: "right" }}>BON</span>
-          <span style={{ width: 120, textAlign: "center" }}>NEXT 5 FIXTURES</span>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 7, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 0.5 }}>
+          <span style={{ width: 28, textAlign: "center" }}>Team</span>
+          <span style={{ width: 30, textAlign: "right" }}>Own%</span>
+          <span style={{ width: 28, textAlign: "right" }}>GW Pts</span>
+          <span style={{ width: 34, textAlign: "right" }}>Total Pts</span>
+          <span style={{ width: 28, textAlign: "right" }}>Avg Pts</span>
+          <span style={{ width: 22, textAlign: "right" }}>Form</span>
+          <span style={{ width: 26, textAlign: "right" }}>Bonus</span>
+          <span style={{ width: 120, textAlign: "center" }}>Next 5 Fixtures</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {starters.map((p) => <SquadPlayer key={p.id} p={p} tm={data.tm} />)}

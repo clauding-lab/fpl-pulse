@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     /^entry\/\d+\/event\/\d+\/picks\/$/.test(endpoint) ||
     /^entry\/\d+\/$/.test(endpoint) ||
     /^entry\/\d+\/history\/$/.test(endpoint) ||
+    /^event\/\d+\/live\/$/.test(endpoint) ||
     /^leagues-classic\/\d+\/standings\//.test(endpoint);
 
   if (!isAllowed) {
