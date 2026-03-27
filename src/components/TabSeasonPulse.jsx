@@ -99,12 +99,15 @@ function PitchFormation({ tpl }) {
 }
 
 function DualBarChart({ gwA, sAvg, top100kAvgs }) {
-  const [hovered, setHovered] = useState(null);
+  const [hovIdx, setHovIdx] = useState(null);
   const allVals = [...gwA.map((x) => x.avg), ...(top100kAvgs ? Object.values(top100kAvgs) : [])];
   const mx = Math.max(...allVals, 1);
   const topSeasonAvg = top100kAvgs
     ? +(Object.values(top100kAvgs).reduce((a, b) => a + b, 0) / Object.values(top100kAvgs).length).toFixed(1)
     : null;
+  const H = 140;
+  const hovered = hovIdx !== null ? gwA[hovIdx] : null;
+  const hovTopAvg = hovIdx !== null ? top100kAvgs?.[gwA[hovIdx]?.gw] : null;
 
   return (
     <Card>
@@ -116,57 +119,59 @@ function DualBarChart({ gwA, sAvg, top100kAvgs }) {
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#3b82f6", marginRight: 4, verticalAlign: "middle" }} />Top 100 Elite{top100kAvgs ? "" : " (loading...)"}</span>
         </div>
       </div>
-      <div style={{ fontSize: 9, color: COLORS.textMuted, marginBottom: 10 }}>
-        Green = all managers scored above season avg · Red = below · Blue = top 100 ranked managers' average
+      <div style={{ fontSize: 9, color: COLORS.textMuted, marginBottom: 4 }}>
+        Green = above season avg · Red = below · Blue = top 100 elite average
       </div>
 
-      {/* Tooltip */}
-      {hovered !== null && (
-        <div style={{
-          background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 8,
-          padding: "8px 12px", marginBottom: 8, display: "flex", gap: 16, alignItems: "center",
-          fontSize: 11, fontWeight: 600,
-        }}>
-          <span style={{ color: COLORS.text }}>GW{hovered.gw}</span>
-          <span>All: <span style={{ color: hovered.avg >= sAvg ? "#22c55e" : "#ef4444", fontFamily: "monospace" }}>{hovered.avg.toFixed(1)}</span></span>
-          {hovered.topAvg && <span>Top 100: <span style={{ color: "#3b82f6", fontFamily: "monospace" }}>{hovered.topAvg}</span></span>}
-          {hovered.topAvg && <span style={{ color: COLORS.textMuted }}>Gap: <span style={{ color: "#3b82f6", fontWeight: 700 }}>+{(hovered.topAvg - hovered.avg).toFixed(1)}</span></span>}
-        </div>
-      )}
+      {/* Fixed-height tooltip — always rendered to prevent reflow */}
+      <div style={{ height: 26, marginBottom: 4 }}>
+        {hovered && (
+          <div style={{ display: "flex", gap: 16, fontSize: 11, fontWeight: 600, color: COLORS.text }}>
+            <span>GW{hovered.gw}</span>
+            <span>All: <span style={{ color: hovered.avg >= sAvg ? "#22c55e" : "#ef4444", fontFamily: "monospace" }}>{hovered.avg.toFixed(1)}</span></span>
+            {hovTopAvg != null && <span>Top 100: <span style={{ color: "#3b82f6", fontFamily: "monospace" }}>{hovTopAvg.toFixed(1)}</span></span>}
+            {hovTopAvg != null && <span style={{ color: COLORS.textMuted }}>Gap: <span style={{ color: "#3b82f6", fontWeight: 700 }}>+{(hovTopAvg - hovered.avg).toFixed(1)}</span></span>}
+          </div>
+        )}
+      </div>
 
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 130, paddingTop: 18 }}>
-        {gwA.map((g) => {
+      {/* Div-based bars — no SVG viewBox, no scaling artifacts */}
+      <div
+        style={{ display: "flex", alignItems: "flex-end", gap: 1, height: H, cursor: "crosshair" }}
+        onMouseLeave={() => setHovIdx(null)}
+      >
+        {gwA.map((g, i) => {
           const topAvg = top100kAvgs?.[g.gw];
-          const isHovered = hovered?.gw === g.gw;
+          const isHov = hovIdx === i;
+          const allH = Math.max((g.avg / mx) * (H - 8), 3);
+          const topH = topAvg ? Math.max((topAvg / mx) * (H - 8), 3) : 0;
           return (
             <div
               key={g.gw}
-              style={{ flex: 1, minWidth: 0, display: "flex", gap: 1, alignItems: "flex-end", cursor: "pointer", opacity: hovered && !isHovered ? 0.4 : 1, transition: "opacity 0.15s" }}
-              onMouseEnter={() => setHovered({ gw: g.gw, avg: g.avg, topAvg })}
-              onMouseLeave={() => setHovered(null)}
+              style={{
+                flex: 1, minWidth: 0, display: "flex", gap: 1, alignItems: "flex-end", justifyContent: "center",
+                height: "100%",
+                opacity: hovIdx !== null && !isHov ? 0.35 : 1,
+              }}
+              onMouseEnter={() => setHovIdx(i)}
             >
               <div style={{
-                flex: 1, height: Math.max((g.avg / mx) * 110, 3),
+                flex: 1, height: allH, maxWidth: 12,
                 background: g.avg >= sAvg ? "#22c55e" : "#ef4444",
                 borderRadius: "2px 2px 0 0",
-                transform: isHovered ? "scaleY(1.05)" : "scaleY(1)",
-                transformOrigin: "bottom",
-                transition: "transform 0.15s",
               }} />
-              <div style={{
-                flex: 1, height: topAvg ? Math.max((topAvg / mx) * 110, 3) : 0,
-                background: "#3b82f6",
-                borderRadius: "2px 2px 0 0",
-                opacity: topAvg ? 1 : 0,
-                transform: isHovered ? "scaleY(1.05)" : "scaleY(1)",
-                transformOrigin: "bottom",
-                transition: "all 0.15s",
-              }} />
+              {topH > 0 && (
+                <div style={{
+                  flex: 1, height: topH, maxWidth: 12,
+                  background: "#3b82f6",
+                  borderRadius: "2px 2px 0 0",
+                }} />
+              )}
             </div>
           );
         })}
       </div>
-      <div style={{ height: 1, background: `${COLORS.amber}50`, marginBottom: 6 }} />
+      <div style={{ height: 1, background: `${COLORS.amber}50`, marginTop: 2, marginBottom: 6 }} />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 10, color: COLORS.textMuted }}>GW1</span>
         <span style={{ fontSize: 10, color: COLORS.amber }}>All Avg: {sAvg.toFixed(1)}{topSeasonAvg ? ` · Top 100 Avg: ${topSeasonAvg}` : ""}</span>

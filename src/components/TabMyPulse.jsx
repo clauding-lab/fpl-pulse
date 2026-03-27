@@ -8,28 +8,18 @@ import html2canvas from "html2canvas";
 const FDR_MINI = { 1: "#00ff87", 2: "#00ff87", 3: "#e8a50a", 4: "#ff2882", 5: "#80072d" };
 
 function RankChart({ rankHistory }) {
-  const [hovered, setHovered] = useState(null);
+  const [hovIdx, setHovIdx] = useState(null);
   if (!rankHistory || rankHistory.length < 2) return null;
 
   const ranks = rankHistory.map((h) => h.rank);
   const maxRank = Math.max(...ranks);
   const minRank = Math.min(...ranks);
   const range = maxRank - minRank || 1;
-  const w = 100 / rankHistory.length;
+  const H = 140, PAD = 12, TOP = 8;
 
-  // SVG path for the line
-  const points = rankHistory.map((h, i) => {
-    const x = (i / (rankHistory.length - 1)) * 100;
-    // Invert Y: lower rank = higher on chart (better)
-    const y = 10 + ((h.rank - minRank) / range) * 80;
-    return { x, y, ...h };
-  });
-  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-
-  // Direction arrows
   const latest = rankHistory[rankHistory.length - 1];
   const prev = rankHistory[rankHistory.length - 2];
-  const delta = prev.rank - latest.rank; // positive = improved
+  const delta = prev.rank - latest.rank;
   const deltaColor = delta > 0 ? COLORS.green : delta < 0 ? COLORS.red : COLORS.textMuted;
 
   function formatRank(r) {
@@ -37,6 +27,8 @@ function RankChart({ rankHistory }) {
     if (r >= 1000) return `${(r / 1000).toFixed(0)}K`;
     return r.toLocaleString();
   }
+
+  const hovered = hovIdx !== null ? rankHistory[hovIdx] : null;
 
   return (
     <Card style={{ marginBottom: 16 }}>
@@ -50,57 +42,44 @@ function RankChart({ rankHistory }) {
         </div>
       </div>
 
-      {/* Tooltip */}
-      {hovered && (
-        <div style={{
-          background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 8,
-          padding: "6px 12px", marginBottom: 8, display: "flex", gap: 16, fontSize: 11, fontWeight: 600,
-        }}>
-          <span style={{ color: COLORS.text }}>GW{hovered.gw}</span>
-          <span>Rank: <span style={{ fontFamily: "monospace", color: COLORS.blue }}>{hovered.rank.toLocaleString()}</span></span>
-          <span>Pts: <span style={{ fontFamily: "monospace" }}>{hovered.pts}</span></span>
-          <span>Total: <span style={{ fontFamily: "monospace" }}>{hovered.total.toLocaleString()}</span></span>
-        </div>
-      )}
-
-      {/* Chart */}
-      <div style={{ position: "relative", height: 140 }}>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: "100%", overflow: "visible" }}>
-          {/* Grid lines */}
-          {[0, 25, 50, 75, 100].map((y) => (
-            <line key={y} x1="0" y1={10 + y * 0.8} x2="100" y2={10 + y * 0.8} stroke={COLORS.border} strokeWidth="0.3" />
-          ))}
-          {/* Area fill */}
-          <path d={`${pathD} L ${points[points.length - 1].x} 95 L ${points[0].x} 95 Z`} fill={`${COLORS.blue}15`} />
-          {/* Line */}
-          <path d={pathD} fill="none" stroke={COLORS.blue} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Points */}
-          {points.map((p, i) => (
-            <circle
-              key={i} cx={p.x} cy={p.y} r={hovered?.gw === p.gw ? 2.5 : 1.5}
-              fill={hovered?.gw === p.gw ? COLORS.green : COLORS.blue}
-              stroke={COLORS.bg} strokeWidth="0.5"
-              style={{ cursor: "pointer" }}
-              onMouseEnter={() => setHovered(p)}
-              onMouseLeave={() => setHovered(null)}
-            />
-          ))}
-        </svg>
-
-        {/* Hover columns */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex" }}>
-          {rankHistory.map((h, i) => (
-            <div
-              key={i}
-              style={{ flex: 1, cursor: "pointer" }}
-              onMouseEnter={() => setHovered(points[i])}
-              onMouseLeave={() => setHovered(null)}
-            />
-          ))}
-        </div>
+      {/* Fixed-height tooltip — always rendered to prevent reflow */}
+      <div style={{ height: 28, marginBottom: 4 }}>
+        {hovered && (
+          <div style={{ display: "flex", gap: 16, fontSize: 11, fontWeight: 600, color: COLORS.text }}>
+            <span>GW{hovered.gw}</span>
+            <span>Rank: <span style={{ fontFamily: "monospace", color: COLORS.blue }}>{hovered.rank.toLocaleString()}</span></span>
+            <span>Pts: <span style={{ fontFamily: "monospace" }}>{hovered.pts}</span></span>
+            <span>Total: <span style={{ fontFamily: "monospace" }}>{hovered.total.toLocaleString()}</span></span>
+          </div>
+        )}
       </div>
 
-      {/* Axis labels */}
+      {/* Canvas-style bar chart — no SVG viewBox scaling */}
+      <div
+        style={{ position: "relative", height: H, display: "flex", alignItems: "flex-end", gap: 0, cursor: "crosshair" }}
+        onMouseLeave={() => setHovIdx(null)}
+      >
+        {rankHistory.map((h, i) => {
+          // Bar height: better rank (lower number) = taller bar
+          const pct = 1 - (h.rank - minRank) / range;
+          const barH = Math.max(TOP + pct * (H - TOP - PAD), 4);
+          const isHov = hovIdx === i;
+          return (
+            <div
+              key={i}
+              style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+              onMouseEnter={() => setHovIdx(i)}
+            >
+              <div style={{
+                width: "70%", maxWidth: 16, height: barH, borderRadius: "3px 3px 0 0",
+                background: isHov ? COLORS.green : COLORS.blue,
+                opacity: hovIdx !== null && !isHov ? 0.35 : 1,
+              }} />
+            </div>
+          );
+        })}
+      </div>
+
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
         <span style={{ fontSize: 9, color: COLORS.textMuted }}>GW1</span>
         <span style={{ fontSize: 9, color: COLORS.textMuted }}>Best: {formatRank(minRank)}</span>
