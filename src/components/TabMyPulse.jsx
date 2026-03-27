@@ -9,13 +9,16 @@ const FDR_MINI = { 1: "#00ff87", 2: "#00ff87", 3: "#e8a50a", 4: "#ff2882", 5: "#
 
 function RankChart({ rankHistory }) {
   const [hovIdx, setHovIdx] = useState(null);
+  const chartRef = useRef(null);
   if (!rankHistory || rankHistory.length < 2) return null;
 
   const ranks = rankHistory.map((h) => h.rank);
+  const pts = rankHistory.map((h) => h.pts);
   const maxRank = Math.max(...ranks);
   const minRank = Math.min(...ranks);
-  const range = maxRank - minRank || 1;
-  const H = 140, PAD = 12, TOP = 8;
+  const rankRange = maxRank - minRank || 1;
+  const maxPts = Math.max(...pts, 1);
+  const H = 150;
 
   const latest = rankHistory[rankHistory.length - 1];
   const prev = rankHistory[rankHistory.length - 2];
@@ -29,10 +32,22 @@ function RankChart({ rankHistory }) {
   }
 
   const hovered = hovIdx !== null ? rankHistory[hovIdx] : null;
+  const n = rankHistory.length;
+
+  // Build SVG polyline points for rank line (inverted: lower rank = higher Y position on chart)
+  // We use a real pixel-based SVG that matches the container exactly
+  const svgW = 600; // Fixed internal coordinate space
+  const barW = svgW / n;
+  const linePoints = rankHistory.map((h, i) => {
+    const x = (i + 0.5) * barW;
+    const yPct = (h.rank - minRank) / rankRange; // 0=best, 1=worst
+    const y = 8 + yPct * (H - 20);
+    return `${x},${y}`;
+  }).join(" ");
 
   return (
     <Card style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>OVERALL RANK</div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 20, fontWeight: 800, fontFamily: "monospace", color: COLORS.text }}>{formatRank(latest.rank)}</span>
@@ -41,43 +56,73 @@ function RankChart({ rankHistory }) {
           </span>
         </div>
       </div>
+      <div style={{ display: "flex", gap: 14, fontSize: 9, color: COLORS.textMuted, marginBottom: 4 }}>
+        <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: COLORS.green, marginRight: 4, verticalAlign: "middle" }} />GW Points (bars)</span>
+        <span><span style={{ display: "inline-block", width: 10, height: 3, borderRadius: 1, background: COLORS.amber, marginRight: 4, verticalAlign: "middle" }} />Overall Rank (line)</span>
+      </div>
 
-      {/* Fixed-height tooltip — always rendered to prevent reflow */}
-      <div style={{ height: 28, marginBottom: 4 }}>
+      {/* Fixed-height tooltip */}
+      <div style={{ height: 26, marginBottom: 2 }}>
         {hovered && (
           <div style={{ display: "flex", gap: 16, fontSize: 11, fontWeight: 600, color: COLORS.text }}>
             <span>GW{hovered.gw}</span>
-            <span>Rank: <span style={{ fontFamily: "monospace", color: COLORS.blue }}>{hovered.rank.toLocaleString()}</span></span>
-            <span>Pts: <span style={{ fontFamily: "monospace" }}>{hovered.pts}</span></span>
+            <span>Pts: <span style={{ fontFamily: "monospace", color: COLORS.green }}>{hovered.pts}</span></span>
+            <span>Rank: <span style={{ fontFamily: "monospace", color: COLORS.amber }}>{hovered.rank.toLocaleString()}</span></span>
             <span>Total: <span style={{ fontFamily: "monospace" }}>{hovered.total.toLocaleString()}</span></span>
           </div>
         )}
       </div>
 
-      {/* Canvas-style bar chart — no SVG viewBox scaling */}
+      {/* Chart: bars (GW pts) + SVG line overlay (rank) */}
       <div
-        style={{ position: "relative", height: H, display: "flex", alignItems: "flex-end", gap: 0, cursor: "crosshair" }}
+        ref={chartRef}
+        style={{ position: "relative", height: H, cursor: "crosshair" }}
         onMouseLeave={() => setHovIdx(null)}
       >
-        {rankHistory.map((h, i) => {
-          // Bar height: better rank (lower number) = taller bar
-          const pct = 1 - (h.rank - minRank) / range;
-          const barH = Math.max(TOP + pct * (H - TOP - PAD), 4);
-          const isHov = hovIdx === i;
-          return (
-            <div
-              key={i}
-              style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-              onMouseEnter={() => setHovIdx(i)}
-            >
-              <div style={{
-                width: "70%", maxWidth: 16, height: barH, borderRadius: "3px 3px 0 0",
-                background: isHov ? COLORS.green : COLORS.blue,
-                opacity: hovIdx !== null && !isHov ? 0.35 : 1,
-              }} />
-            </div>
-          );
-        })}
+        {/* Bar layer */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", gap: 1 }}>
+          {rankHistory.map((h, i) => {
+            const barH = Math.max((h.pts / maxPts) * (H - 10), 3);
+            const isHov = hovIdx === i;
+            return (
+              <div
+                key={i}
+                style={{ flex: 1, height: "100%", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+                onMouseEnter={() => setHovIdx(i)}
+              >
+                <div style={{
+                  width: "65%", maxWidth: 14, height: barH, borderRadius: "3px 3px 0 0",
+                  background: isHov ? COLORS.green : `${COLORS.green}60`,
+                  opacity: hovIdx !== null && !isHov ? 0.3 : 1,
+                }} />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* SVG line overlay for rank — uses viewBox matching internal coords */}
+        <svg
+          viewBox={`0 0 ${svgW} ${H}`}
+          preserveAspectRatio="none"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+        >
+          <polyline
+            points={linePoints}
+            fill="none"
+            stroke={COLORS.amber}
+            strokeWidth="3"
+            vectorEffect="non-scaling-stroke"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          {/* Dot on hovered point */}
+          {hovIdx !== null && (() => {
+            const x = (hovIdx + 0.5) * barW;
+            const yPct = (rankHistory[hovIdx].rank - minRank) / rankRange;
+            const y = 8 + yPct * (H - 20);
+            return <circle cx={x} cy={y} r="5" fill={COLORS.amber} stroke={COLORS.bg} strokeWidth="2" vectorEffect="non-scaling-stroke" />;
+          })()}
+        </svg>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
