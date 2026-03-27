@@ -234,9 +234,7 @@ function TransferMatrix({ squad }) {
   );
 }
 
-function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW }) {
-  const [selectedLeague, setSelectedLeague] = useState("");
-  const [standings, setStandings] = useState(null);
+function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeague, setSelectedLeague, standings, setStandings }) {
   const [leagueLoading, setLeagueLoading] = useState(false);
   const [expandedEntry, setExpandedEntry] = useState(null);
   const [expandedPicks, setExpandedPicks] = useState(null);
@@ -415,6 +413,8 @@ export default function TabMyPulse({ data }) {
   const [managerName, setManagerName] = useState("");
   const [entryData, setEntryData] = useState(null);
   const [mySubTab, setMySubTab] = useState(0);
+  const [selectedLeague, setSelectedLeague] = useState("");
+  const [leagueStandings, setLeagueStandings] = useState(null);
   const shareRef = useRef(null);
   const [exporting, setExporting] = useState(false);
   const autoFetched = useRef(false);
@@ -529,7 +529,7 @@ export default function TabMyPulse({ data }) {
           <button onClick={handleShare} disabled={exporting} style={{ background: COLORS.green, color: COLORS.bg, border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: exporting ? "wait" : "pointer", opacity: exporting ? 0.6 : 1 }}>
             {exporting ? "Exporting..." : "📸 Share My Pulse"}
           </button>
-          <button onClick={() => { setAnalysis(null); setEntryData(null); localStorage.removeItem(SAVED_TEAM_KEY); autoFetched.current = false; }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
+          <button onClick={() => { setAnalysis(null); setEntryData(null); setSelectedLeague(""); setLeagueStandings(null); localStorage.removeItem(SAVED_TEAM_KEY); autoFetched.current = false; }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
             Change Team
           </button>
         </div>
@@ -554,7 +554,7 @@ export default function TabMyPulse({ data }) {
       </div>
 
       {/* Mini Leagues Tab */}
-      {mySubTab === 1 && <MiniLeagues entryData={entryData} myEntryId={teamId} plMap={data.plMap} lastFinishedGW={data.lastFinishedGW} />}
+      {mySubTab === 1 && <MiniLeagues entryData={entryData} myEntryId={teamId} plMap={data.plMap} lastFinishedGW={data.lastFinishedGW} selectedLeague={selectedLeague} setSelectedLeague={setSelectedLeague} standings={leagueStandings} setStandings={setLeagueStandings} />}
 
       {/* My Team Tab */}
       {mySubTab === 0 && <>
