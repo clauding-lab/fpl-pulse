@@ -170,7 +170,10 @@ export default function App() {
         {tab === 2 && <TabPlayerIntel data={data} />}
         {tab === 3 && <TabHiddenGems data={data} />}
         {tab === 4 && <TabDeepDive data={data} />}
-        {tab === 5 && <TabMyPulse data={data} />}
+        {/* My Pulse stays mounted to preserve state (team ID, league selection) */}
+        <div style={{ display: tab === 5 ? "block" : "none" }}>
+          <TabMyPulse data={data} />
+        </div>
       </div>
 
       {/* Score Explainer Modal */}

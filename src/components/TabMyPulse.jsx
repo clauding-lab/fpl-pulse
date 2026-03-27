@@ -162,17 +162,17 @@ function SquadPlayer({ p, tm }) {
         {p.isVice && <span style={{ fontSize: 9, background: COLORS.blue, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700, flexShrink: 0 }}>V</span>}
       </div>
       <div style={{ display: "flex", gap: 6, fontSize: 11, alignItems: "center", flexShrink: 0 }}>
-        <span style={{ color: COLORS.textSecondary, width: 28, textAlign: "right" }}>£{p.price}</span>
-        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 20, textAlign: "right" }}>
+        <span style={{ color: COLORS.textSecondary, width: 28, textAlign: "center", fontSize: 10 }}>{p.team}</span>
+        <span style={{ fontFamily: "monospace", width: 30, textAlign: "right", color: COLORS.textSecondary }}>{p.own}%</span>
+        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 24, textAlign: "right" }}>
           {p.lastGwPts != null ? p.lastGwPts : "—"}
         </span>
-        <span style={{ fontFamily: "monospace", width: 26, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
+        <span style={{ fontFamily: "monospace", width: 30, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
         <span style={{ fontFamily: "monospace", width: 24, textAlign: "right", color: COLORS.textSecondary }}>{p.ppg}</span>
         <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
           {p.form}
         </span>
-        <span style={{ fontFamily: "monospace", width: 26, textAlign: "right", color: COLORS.textSecondary }}>{p.own}%</span>
-        <span style={{ fontFamily: "monospace", width: 18, textAlign: "right", color: COLORS.amber }}>{p.bonus}</span>
+        <span style={{ fontFamily: "monospace", width: 22, textAlign: "right", color: COLORS.amber }}>{p.bonus}</span>
         <div style={{ display: "flex", gap: 2 }}>
           {(p.next5 || []).map((f, i) => (
             <div key={i} title={`GW${f.gw}: ${tm?.[f.opp]?.short_name || "?"} ${f.home ? "(H)" : "(A)"}`} style={{
@@ -634,14 +634,14 @@ export default function TabMyPulse({ data }) {
       {/* Squad List */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 8, fontWeight: 700 }}>STARTING XI</div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 8, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
-          <span style={{ width: 28, textAlign: "right" }}>PRICE</span>
-          <span style={{ width: 20, textAlign: "right" }}>LAST</span>
-          <span style={{ width: 26, textAlign: "right" }}>TOTAL</span>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 7, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
+          <span style={{ width: 28, textAlign: "center" }}>TEAM</span>
+          <span style={{ width: 30, textAlign: "right" }}>OWN%</span>
+          <span style={{ width: 24, textAlign: "right" }}>GW PTS</span>
+          <span style={{ width: 30, textAlign: "right" }}>TOTAL</span>
           <span style={{ width: 24, textAlign: "right" }}>AVG</span>
           <span style={{ width: 22, textAlign: "right" }}>FORM</span>
-          <span style={{ width: 26, textAlign: "right" }}>OWN%</span>
-          <span style={{ width: 18, textAlign: "right" }}>BON</span>
+          <span style={{ width: 22, textAlign: "right" }}>BON</span>
           <span style={{ width: 120, textAlign: "center" }}>NEXT 5 FIXTURES</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
