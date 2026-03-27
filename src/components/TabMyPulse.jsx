@@ -162,7 +162,6 @@ function SquadPlayer({ p, tm }) {
         {p.isVice && <span style={{ fontSize: 9, background: COLORS.blue, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700, flexShrink: 0 }}>V</span>}
       </div>
       <div style={{ display: "flex", gap: 6, fontSize: 11, alignItems: "center", flexShrink: 0 }}>
-        <span style={{ color: COLORS.textSecondary, width: 28, textAlign: "center", fontSize: 10 }}>{p.team}</span>
         <span style={{ fontFamily: "monospace", width: 30, textAlign: "right", color: COLORS.textSecondary }}>{p.own}%</span>
         <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 28, textAlign: "right" }}>
           {p.lastGwPts != null ? p.lastGwPts : "—"}
@@ -633,7 +632,6 @@ export default function TabMyPulse({ data }) {
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 8, fontWeight: 700 }}>STARTING XI</div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 7, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 0.5 }}>
-          <span style={{ width: 28, textAlign: "center" }}>Team</span>
           <span style={{ width: 30, textAlign: "right" }}>Own%</span>
           <span style={{ width: 28, textAlign: "right" }}>GW Pts</span>
           <span style={{ width: 34, textAlign: "right" }}>Total Pts</span>
