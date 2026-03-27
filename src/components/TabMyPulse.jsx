@@ -314,20 +314,14 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
             <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>{standings.league?.name}</div>
             <div style={{ fontSize: 10, color: COLORS.textMuted }}>{standings.standings?.results?.length || 0} managers · tap row to expand</div>
           </div>
-          <div style={{ margin: "0 -16px", padding: "0 4px", boxSizing: "border-box" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
-              <colgroup>
-                <col style={{ width: "24px" }} />
-                <col style={{ width: "24px" }} />
-                <col />
-                <col style={{ width: "36px" }} />
-                <col style={{ width: "42px" }} />
-              </colgroup>
+          <div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, tableLayout: "fixed" }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  {["#", "", "Manager / Team", "GW", "Total"].map((h) => (
-                    <th key={h} style={{ padding: "6px 2px", textAlign: h === "Manager / Team" ? "left" : "center", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, letterSpacing: 0.5 }}>{h}</th>
-                  ))}
+                  <th style={{ padding: "6px 2px", textAlign: "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, width: 44 }}>#</th>
+                  <th style={{ padding: "6px 2px", textAlign: "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9 }}>Team</th>
+                  <th style={{ padding: "6px 2px", textAlign: "right", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, width: 34 }}>GW</th>
+                  <th style={{ padding: "6px 2px", textAlign: "right", color: COLORS.textSecondary, fontWeight: 600, fontSize: 9, width: 42 }}>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -344,18 +338,20 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
                           cursor: "pointer",
                         }}
                       >
-                        <td style={{ padding: "8px 2px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</td>
-                        <td style={{ padding: "8px 0", textAlign: "center" }}><RankChange rank={s.rank} lastRank={s.last_rank} /></td>
+                        <td style={{ padding: "6px 2px", verticalAlign: "middle" }}>
+                          <span style={{ fontWeight: 700, fontFamily: "monospace", fontSize: 11, color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</span>
+                          {" "}<RankChange rank={s.rank} lastRank={s.last_rank} />
+                        </td>
                         <td style={{ padding: "6px 2px", overflow: "hidden" }}>
-                          <div style={{ fontWeight: isMe ? 700 : 500, fontSize: 11, color: isMe ? COLORS.green : COLORS.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</div>
+                          <div style={{ fontWeight: isMe ? 700 : 500, fontSize: 12, color: isMe ? COLORS.green : COLORS.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</div>
                           <div style={{ fontSize: 9, color: COLORS.textMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.player_name}</div>
                         </td>
-                        <td style={{ padding: "8px 2px", textAlign: "center", fontFamily: "monospace", fontWeight: 600, fontSize: 11 }}>{s.event_total}</td>
-                        <td style={{ padding: "8px 2px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
+                        <td style={{ padding: "6px 2px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, fontSize: 11 }}>{s.event_total}</td>
+                        <td style={{ padding: "6px 2px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={5} style={{ padding: "0 6px 12px", background: `${COLORS.blue}08`, borderBottom: `1px solid ${COLORS.border}` }}>
+                          <td colSpan={4} style={{ padding: "0 6px 12px", background: `${COLORS.blue}08`, borderBottom: `1px solid ${COLORS.border}` }}>
                             {picksLoading && <div style={{ padding: 12, textAlign: "center", color: COLORS.textMuted, fontSize: 11 }}>Loading team...</div>}
                             {expandedPicks && !picksLoading && (
                               <div style={{ padding: "8px 4px" }}>
