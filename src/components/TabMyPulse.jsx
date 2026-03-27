@@ -314,14 +314,14 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
             <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>{standings.league?.name}</div>
             <div style={{ fontSize: 10, color: COLORS.textMuted }}>{standings.standings?.results?.length || 0} managers · tap row to expand</div>
           </div>
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ margin: "0 -16px", padding: "0 4px", boxSizing: "border-box" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
               <colgroup>
-                <col style={{ width: "8%" }} />
-                <col style={{ width: "8%" }} />
-                <col style={{ width: "54%" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "16%" }} />
+                <col style={{ width: "24px" }} />
+                <col style={{ width: "24px" }} />
+                <col />
+                <col style={{ width: "36px" }} />
+                <col style={{ width: "42px" }} />
               </colgroup>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
