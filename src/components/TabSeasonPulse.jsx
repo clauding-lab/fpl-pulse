@@ -249,12 +249,12 @@ export default function TabSeasonPulse({ data }) {
 
   useEffect(() => {
     let cancelled = false;
-    const cacheKey = `fpl_smart_money_gw${glance.gw}`;
+    const cacheKey = `fpl_smart_money_v2_gw${glance.gw}`;
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) { setSmartMoney(JSON.parse(cached)); return; }
 
     setSmLoading(true);
-    fetch("/api/smart-money")
+    fetch("/api/smart-money?v=2")
       .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
       .then((d) => { if (!cancelled) { setSmartMoney(d); sessionStorage.setItem(cacheKey, JSON.stringify(d)); } })
       .catch((e) => { if (!cancelled) setSmError(e.message); })
