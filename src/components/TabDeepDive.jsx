@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { COLORS, POS_COLORS, POS_MAP, FDR_COLORS, FDR_TEXT } from "../utils/theme";
-import { Card, PlayerTable } from "./shared";
+import { Card, PlayerTable, SubBtn } from "./shared";
 import { playerPhotoUrl } from "../utils/api";
 import TabHiddenGems from "./TabHiddenGems";
 
@@ -348,16 +348,9 @@ export default function TabDeepDive({ data }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Panel selector */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", padding: 4, borderRadius: 12, boxShadow: COLORS.shadowInset, background: COLORS.bg }}>
+      <div style={{ display: "flex", gap: 2, marginBottom: 16, overflowX: "auto", borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 2 }}>
         {PANELS.map((p, i) => (
-          <button key={i} onClick={() => setPanel(i)} style={{
-            background: panel === i ? COLORS.surface : "transparent",
-            boxShadow: panel === i ? COLORS.shadowRaised : "none",
-            color: panel === i ? COLORS.green : COLORS.textSecondary,
-            border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 11, fontWeight: panel === i ? 700 : 500, cursor: "pointer", transition: "all 0.15s",
-          }}>
-            {p}
-          </button>
+          <SubBtn key={i} label={p} active={panel === i} onClick={() => setPanel(i)} />
         ))}
       </div>
 
