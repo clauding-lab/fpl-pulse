@@ -36,7 +36,7 @@ export default function TabFixtureEngine({ data }) {
         FIXTURE RUN-INS · EASIEST RUN FIRST
       </div>
       <div style={{ overflowX: "auto", borderRadius: 12, border: `1px solid ${COLORS.border}`, marginBottom: 20 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+        <table className="fixture-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr style={{ background: COLORS.surface }}>
               <th style={{ padding: "10px 12px", textAlign: "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10, position: "sticky", left: 0, background: COLORS.surface, zIndex: 2 }}>TEAM</th>

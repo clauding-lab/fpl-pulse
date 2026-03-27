@@ -41,9 +41,9 @@ body {
   table th, table td { padding: 6px 4px !important; }
 }
 
-/* Ensure fixture grid doesn't break on mobile */
+/* Ensure fixture grid doesn't break on mobile — scoped to fixture tables only */
 @media (max-width: 480px) {
-  table { min-width: 600px; }
+  table.fixture-table { min-width: 600px; }
 }
 
 /* Bottom tab bar on mobile */
