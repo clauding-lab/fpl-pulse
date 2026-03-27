@@ -234,12 +234,114 @@ function TransferMatrix({ squad }) {
   );
 }
 
+function MiniLeagues({ entryData, myEntryId }) {
+  const [selectedLeague, setSelectedLeague] = useState("");
+  const [standings, setStandings] = useState(null);
+  const [leagueLoading, setLeagueLoading] = useState(false);
+
+  const leagues = (entryData?.leagues?.classic || []).filter((l) => l.id !== 314 && l.id !== 276 && l.id !== 333); // filter out Overall, GW1, Second Chance
+
+  const handleLeagueChange = async (leagueId) => {
+    setSelectedLeague(leagueId);
+    if (!leagueId) { setStandings(null); return; }
+    setLeagueLoading(true);
+    try {
+      const r = await fetch(`/api/fpl?endpoint=leagues-classic/${leagueId}/standings/`);
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      setStandings(d);
+    } catch {
+      setStandings(null);
+    }
+    setLeagueLoading(false);
+  };
+
+  return (
+    <div>
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 12, fontWeight: 700 }}>CHOOSE YOUR MINI-LEAGUE</div>
+        <select
+          value={selectedLeague}
+          onChange={(e) => handleLeagueChange(e.target.value)}
+          style={{
+            width: "100%", padding: "10px 14px", borderRadius: 8,
+            background: COLORS.surface, color: COLORS.text, border: `1px solid ${COLORS.border}`,
+            fontSize: 14, cursor: "pointer", outline: "none",
+          }}
+        >
+          <option value="">Select a league...</option>
+          {leagues.map((l) => (
+            <option key={l.id} value={l.id}>{l.name} (Rank: {l.entry_rank?.toLocaleString() || "—"})</option>
+          ))}
+        </select>
+      </Card>
+
+      {leagueLoading && (
+        <Card><div style={{ textAlign: "center", padding: 20, color: COLORS.textMuted }}>Loading standings...</div></Card>
+      )}
+
+      {standings && !leagueLoading && (
+        <Card>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>{standings.league?.name}</div>
+            <div style={{ fontSize: 10, color: COLORS.textMuted }}>{standings.standings?.results?.length || 0} managers shown</div>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                  {["#", "Manager", "Team", "GW", "Total"].map((h) => (
+                    <th key={h} style={{ padding: "8px 10px", textAlign: h === "#" || h === "GW" || h === "Total" ? "center" : "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10, letterSpacing: 1 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(standings.standings?.results || []).map((s) => {
+                  const isMe = String(s.entry) === String(myEntryId);
+                  return (
+                    <tr
+                      key={s.entry}
+                      style={{
+                        borderBottom: `1px solid ${COLORS.border}`,
+                        background: isMe ? `${COLORS.green}12` : "transparent",
+                      }}
+                    >
+                      <td style={{ padding: "10px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</td>
+                      <td style={{ padding: "10px", fontWeight: isMe ? 700 : 400, color: isMe ? COLORS.green : COLORS.text }}>{s.player_name}</td>
+                      <td style={{ padding: "10px", color: COLORS.textSecondary, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
+                      <td style={{ padding: "10px", textAlign: "center", fontFamily: "monospace", fontWeight: 600 }}>{s.event_total}</td>
+                      <td style={{ padding: "10px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {standings.standings?.has_next && (
+            <div style={{ textAlign: "center", marginTop: 10, fontSize: 10, color: COLORS.textMuted }}>
+              Showing top {standings.standings.results.length} managers. Full standings on the FPL app.
+            </div>
+          )}
+        </Card>
+      )}
+
+      {!selectedLeague && !leagueLoading && (
+        <Card style={{ textAlign: "center", padding: "40px 20px" }}>
+          <div style={{ fontSize: 13, color: COLORS.textMuted }}>Select a league above to view standings</div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export default function TabMyPulse({ data }) {
   const [teamId, setTeamId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [managerName, setManagerName] = useState("");
+  const [entryData, setEntryData] = useState(null);
+  const [mySubTab, setMySubTab] = useState(0);
   const shareRef = useRef(null);
   const [exporting, setExporting] = useState(false);
 
@@ -274,8 +376,10 @@ export default function TabMyPulse({ data }) {
       return;
     }
     setManagerName(`${result.entry.player_first_name} ${result.entry.player_last_name}`);
+    setEntryData(result.entry);
     const lastGwEntry = result.history?.current?.length ? result.history.current[result.history.current.length - 1] : null;
     setAnalysis({ ...analyzeSquad(result.picks, data, result.history), lastGwEntry });
+    setMySubTab(0);
     setLoading(false);
   };
 
@@ -314,10 +418,12 @@ export default function TabMyPulse({ data }) {
   const starters = squad.filter((p) => !p.isBench);
   const bench = squad.filter((p) => p.isBench);
 
+  const teamName = entryData?.name || managerName;
+
   return (
     <div>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 700 }}>{managerName}</div>
           <div style={{ fontSize: 12, color: COLORS.textSecondary }}>GW{data.gw} Squad Analysis</div>
@@ -326,12 +432,35 @@ export default function TabMyPulse({ data }) {
           <button onClick={handleShare} disabled={exporting} style={{ background: COLORS.green, color: COLORS.bg, border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: exporting ? "wait" : "pointer", opacity: exporting ? 0.6 : 1 }}>
             {exporting ? "Exporting..." : "📸 Share My Pulse"}
           </button>
-          <button onClick={() => setAnalysis(null)} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
+          <button onClick={() => { setAnalysis(null); setEntryData(null); }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
             Change Team
           </button>
         </div>
       </div>
 
+      {/* Sub-tabs: My Team / Mini Leagues */}
+      <div style={{ display: "flex", gap: 2, marginBottom: 16, borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 2 }}>
+        {[teamName || "My Team", "Mini Leagues"].map((label, i) => (
+          <button
+            key={i}
+            onClick={() => setMySubTab(i)}
+            style={{
+              background: mySubTab === i ? COLORS.green : "transparent",
+              color: mySubTab === i ? COLORS.bg : COLORS.textSecondary,
+              border: "none", borderRadius: "6px 6px 0 0",
+              padding: "8px 20px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Mini Leagues Tab */}
+      {mySubTab === 1 && <MiniLeagues entryData={entryData} myEntryId={teamId} />}
+
+      {/* My Team Tab */}
+      {mySubTab === 0 && <>
       {/* Screenshot Zone */}
       <div ref={shareRef} style={{ background: COLORS.bg, padding: 4 }}>
 
@@ -471,6 +600,7 @@ export default function TabMyPulse({ data }) {
       </div>
 
       </div>{/* end screenshot zone */}
+      </>}
     </div>
   );
 }
