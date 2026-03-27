@@ -420,8 +420,16 @@ export default function TabMyPulse({ data }) {
   const [managerName, setManagerName] = useState("");
   const [entryData, setEntryData] = useState(null);
   const [mySubTab, setMySubTab] = useState(0);
-  const [selectedLeague, setSelectedLeague] = useState("");
+  const SAVED_LEAGUE_KEY = "fpl_pulse_league";
+  const [selectedLeague, setSelectedLeagueRaw] = useState(() => localStorage.getItem(SAVED_LEAGUE_KEY) || "");
   const [leagueStandings, setLeagueStandings] = useState(null);
+  const leagueAutoFetched = useRef(false);
+
+  const setSelectedLeague = (val) => {
+    setSelectedLeagueRaw(val);
+    if (val) localStorage.setItem(SAVED_LEAGUE_KEY, val);
+    else localStorage.removeItem(SAVED_LEAGUE_KEY);
+  };
   const shareRef = useRef(null);
   const [exporting, setExporting] = useState(false);
   const autoFetched = useRef(false);
@@ -487,6 +495,18 @@ export default function TabMyPulse({ data }) {
     }
   }, [data.plMap]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-fetch saved league standings on mount
+  useEffect(() => {
+    if (leagueAutoFetched.current || !analysis || !selectedLeague || leagueStandings) return;
+    leagueAutoFetched.current = true;
+    (async () => {
+      try {
+        const r = await fetch(`/api/fpl?endpoint=leagues-classic/${selectedLeague}/standings/`);
+        if (r.ok) setLeagueStandings(await r.json());
+      } catch {}
+    })();
+  }, [analysis, selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!analysis) {
     return (
       <Card style={{ textAlign: "center", padding: "60px 20px" }}>
@@ -536,7 +556,7 @@ export default function TabMyPulse({ data }) {
           <button onClick={handleShare} disabled={exporting} style={{ background: COLORS.green, color: COLORS.bg, border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: exporting ? "wait" : "pointer", opacity: exporting ? 0.6 : 1 }}>
             {exporting ? "Exporting..." : "📸 Share My Pulse"}
           </button>
-          <button onClick={() => { setAnalysis(null); setEntryData(null); setSelectedLeague(""); setLeagueStandings(null); localStorage.removeItem(SAVED_TEAM_KEY); autoFetched.current = false; }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
+          <button onClick={() => { setAnalysis(null); setEntryData(null); setSelectedLeague(""); setLeagueStandings(null); localStorage.removeItem(SAVED_TEAM_KEY); localStorage.removeItem(SAVED_LEAGUE_KEY); autoFetched.current = false; leagueAutoFetched.current = false; }} style={{ background: COLORS.surface, color: COLORS.textSecondary, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
             Change Team
           </button>
         </div>
