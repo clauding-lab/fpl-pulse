@@ -371,5 +371,13 @@ export function analyzeSquad(picks, data, history) {
     if (chipsLeft.freehit) chips.freeHit = worstFHgw;
   }
 
-  return { squad, healthScore, weakest, bestXI: validXI, capPick, vicePick, chips };
+  // Rank history for chart
+  const rankHistory = (history?.current || []).map((h) => ({
+    gw: h.event,
+    rank: h.overall_rank,
+    pts: h.points,
+    total: h.total_points,
+  }));
+
+  return { squad, healthScore, weakest, bestXI: validXI, capPick, vicePick, chips, rankHistory };
 }
