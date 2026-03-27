@@ -168,11 +168,9 @@ function SquadPlayer({ p, tm }) {
           {p.lastGwPts != null ? p.lastGwPts : "—"}
         </span>
         <span style={{ fontFamily: "monospace", width: 34, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
-        <span style={{ fontFamily: "monospace", width: 28, textAlign: "right", color: COLORS.textSecondary }}>{p.ppg}</span>
         <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
           {p.form}
         </span>
-        <span style={{ fontFamily: "monospace", width: 26, textAlign: "right", color: COLORS.amber }}>{p.bonus}</span>
         <div style={{ display: "flex", gap: 2 }}>
           {(p.next5 || []).map((f, i) => (
             <div key={i} title={`GW${f.gw}: ${tm?.[f.opp]?.short_name || "?"} ${f.home ? "(H)" : "(A)"}`} style={{
@@ -639,9 +637,7 @@ export default function TabMyPulse({ data }) {
           <span style={{ width: 30, textAlign: "right" }}>Own%</span>
           <span style={{ width: 28, textAlign: "right" }}>GW Pts</span>
           <span style={{ width: 34, textAlign: "right" }}>Total Pts</span>
-          <span style={{ width: 28, textAlign: "right" }}>Avg Pts</span>
           <span style={{ width: 22, textAlign: "right" }}>Form</span>
-          <span style={{ width: 26, textAlign: "right" }}>Bonus</span>
           <span style={{ width: 120, textAlign: "center" }}>Next 5 Fixtures</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
