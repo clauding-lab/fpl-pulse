@@ -190,8 +190,17 @@ export function computeAll(apiData) {
   const plMap = {};
   pl.forEach((p) => (plMap[p.id] = p));
 
-  // Template XI
-  const tpl = [...pl].sort((a, b) => b.own - a.own).slice(0, 11);
+  // Template XI — valid FPL formation: 1 GK + 10 outfield (max 5 DEF, 5 MID, 3 FWD)
+  const _sorted = [...pl].sort((a, b) => b.own - a.own);
+  const tplGk = _sorted.filter((p) => p.pos === 1).slice(0, 1);
+  const _posCount = { 2: 0, 3: 0, 4: 0 };
+  const _posMax  = { 2: 5, 3: 5, 4: 3 };
+  const tplOut = [];
+  for (const p of _sorted.filter((p) => p.pos !== 1)) {
+    if (tplOut.length >= 10) break;
+    if (_posCount[p.pos] < _posMax[p.pos]) { tplOut.push(p); _posCount[p.pos]++; }
+  }
+  const tpl = [...tplGk, ...tplOut];
   const tH = tpl.reduce((a, p) => a + p.form, 0) / tpl.length;
 
   // Position meta

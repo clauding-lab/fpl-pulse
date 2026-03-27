@@ -45,25 +45,14 @@ function SideBySide({ left, right }) {
 }
 
 function PitchFormation({ tpl }) {
+  // tpl is already a valid FPL XI (built in calculations.js with position limits enforced)
+  // Just group by position and display — no overflow logic needed
   const byPos = { 1: [], 2: [], 3: [], 4: [] };
   tpl.forEach((p) => byPos[p.pos]?.push(p));
-  // Exactly 1 GK, then fill outfield from most-owned
-  const gk = byPos[1].slice(0, 1);
-  // Start with minimums: 3 DEF, 3 MID, 1 FWD
-  const def = byPos[2].slice(0, 3);
-  const mid = byPos[3].slice(0, 3);
-  const fwd = byPos[4].slice(0, 1);
-  const placed = new Set([...gk, ...def, ...mid, ...fwd].map((p) => p.id));
-  // remaining outfield players only — skip extra GKs (only 1 allowed)
-  const remaining = tpl.filter((p) => !placed.has(p.id) && p.pos !== 1);
-  while (gk.length + def.length + mid.length + fwd.length < 11 && remaining.length) {
-    const p = remaining.shift();
-    if (p.pos === 2 && def.length < 5) def.push(p);
-    else if (p.pos === 3 && mid.length < 5) mid.push(p);
-    else if (p.pos === 4 && fwd.length < 3) fwd.push(p);
-    else if (def.length < 5) def.push(p);
-    else if (mid.length < 5) mid.push(p);
-  }
+  const gk  = byPos[1];
+  const def = byPos[2];
+  const mid = byPos[3];
+  const fwd = byPos[4];
 
   const PlayerNode = ({ p }) => (
     <div style={{ textAlign: "center", minWidth: 70 }}>
