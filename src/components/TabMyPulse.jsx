@@ -317,11 +317,11 @@ function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW, selectedLeag
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
               <colgroup>
-                <col style={{ width: 26 }} />
-                <col style={{ width: 22 }} />
-                <col style={{ width: "auto" }} />
-                <col style={{ width: 32 }} />
-                <col style={{ width: 38 }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "54%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "16%" }} />
               </colgroup>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
