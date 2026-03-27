@@ -4,7 +4,7 @@
     {
       "name": "dev",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd '/Users/adnanrashid/Downloads/Claude Code/fpl-pulse' && ./node_modules/.bin/vite --host --port $PORT"],
+      "runtimeArgs": ["-c", "cd /tmp/fpl-pulse-link && node node_modules/vite/bin/vite.js --host --port $PORT"],
       "port": 5173
     }
   ]
