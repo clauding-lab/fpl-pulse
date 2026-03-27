@@ -209,9 +209,9 @@ function PosFilter({ value, onChange }) {
   );
 }
 
-function filterByPos(arr, pos) {
-  if (!pos) return arr;
-  return arr.filter((p) => p.pos === pos || p.posN === pos);
+function filterByPos(arr, pos, limit = 10) {
+  const filtered = !pos ? arr : arr.filter((p) => p.pos === pos || p.posN === pos);
+  return filtered.slice(0, limit);
 }
 
 export default function TabSeasonPulse({ data }) {
