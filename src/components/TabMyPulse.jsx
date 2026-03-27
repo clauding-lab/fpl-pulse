@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { COLORS, POS_COLORS } from "../utils/theme";
 import { Card, StatCard } from "./shared";
 import { fetchSquad } from "../utils/api";
@@ -234,27 +234,55 @@ function TransferMatrix({ squad }) {
   );
 }
 
-function MiniLeagues({ entryData, myEntryId }) {
+function MiniLeagues({ entryData, myEntryId, plMap, lastFinishedGW }) {
   const [selectedLeague, setSelectedLeague] = useState("");
   const [standings, setStandings] = useState(null);
   const [leagueLoading, setLeagueLoading] = useState(false);
+  const [expandedEntry, setExpandedEntry] = useState(null);
+  const [expandedPicks, setExpandedPicks] = useState(null);
+  const [picksLoading, setPicksLoading] = useState(false);
 
-  const leagues = (entryData?.leagues?.classic || []).filter((l) => l.id !== 314 && l.id !== 276 && l.id !== 333); // filter out Overall, GW1, Second Chance
+  const leagues = (entryData?.leagues?.classic || []).filter((l) => l.id !== 314 && l.id !== 276 && l.id !== 333);
 
   const handleLeagueChange = async (leagueId) => {
     setSelectedLeague(leagueId);
+    setExpandedEntry(null);
+    setExpandedPicks(null);
     if (!leagueId) { setStandings(null); return; }
     setLeagueLoading(true);
     try {
       const r = await fetch(`/api/fpl?endpoint=leagues-classic/${leagueId}/standings/`);
       if (!r.ok) throw new Error();
-      const d = await r.json();
-      setStandings(d);
+      setStandings(await r.json());
     } catch {
       setStandings(null);
     }
     setLeagueLoading(false);
   };
+
+  const handleRowClick = async (entryId) => {
+    if (expandedEntry === entryId) { setExpandedEntry(null); setExpandedPicks(null); return; }
+    setExpandedEntry(entryId);
+    setExpandedPicks(null);
+    setPicksLoading(true);
+    try {
+      const gw = lastFinishedGW || 31;
+      const r = await fetch(`/api/fpl?endpoint=entry/${entryId}/event/${gw}/picks/`);
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      setExpandedPicks(d);
+    } catch {
+      setExpandedPicks(null);
+    }
+    setPicksLoading(false);
+  };
+
+  function RankChange({ rank, lastRank }) {
+    if (!lastRank || lastRank === rank) return <span style={{ fontSize: 9, color: COLORS.textMuted }}>—</span>;
+    const diff = lastRank - rank; // positive = moved up
+    if (diff > 0) return <span style={{ fontSize: 9, fontWeight: 700, color: COLORS.green }}>▲{diff}</span>;
+    return <span style={{ fontSize: 9, fontWeight: 700, color: COLORS.red }}>▼{Math.abs(diff)}</span>;
+  }
 
   return (
     <div>
@@ -284,34 +312,77 @@ function MiniLeagues({ entryData, myEntryId }) {
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, fontWeight: 700 }}>{standings.league?.name}</div>
-            <div style={{ fontSize: 10, color: COLORS.textMuted }}>{standings.standings?.results?.length || 0} managers shown</div>
+            <div style={{ fontSize: 10, color: COLORS.textMuted }}>{standings.standings?.results?.length || 0} managers · tap row to expand</div>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  {["#", "Manager", "Team", "GW", "Total"].map((h) => (
-                    <th key={h} style={{ padding: "8px 10px", textAlign: h === "#" || h === "GW" || h === "Total" ? "center" : "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10, letterSpacing: 1 }}>{h}</th>
+                  {["#", "", "Manager", "Team", "GW", "Total"].map((h) => (
+                    <th key={h} style={{ padding: "8px 6px", textAlign: h === "#" || h === "" || h === "GW" || h === "Total" ? "center" : "left", color: COLORS.textSecondary, fontWeight: 600, fontSize: 10, letterSpacing: 1 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {(standings.standings?.results || []).map((s) => {
                   const isMe = String(s.entry) === String(myEntryId);
+                  const isExpanded = expandedEntry === s.entry;
                   return (
-                    <tr
-                      key={s.entry}
-                      style={{
-                        borderBottom: `1px solid ${COLORS.border}`,
-                        background: isMe ? `${COLORS.green}12` : "transparent",
-                      }}
-                    >
-                      <td style={{ padding: "10px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</td>
-                      <td style={{ padding: "10px", fontWeight: isMe ? 700 : 400, color: isMe ? COLORS.green : COLORS.text }}>{s.player_name}</td>
-                      <td style={{ padding: "10px", color: COLORS.textSecondary, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
-                      <td style={{ padding: "10px", textAlign: "center", fontFamily: "monospace", fontWeight: 600 }}>{s.event_total}</td>
-                      <td style={{ padding: "10px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
-                    </tr>
+                    <React.Fragment key={s.entry}>
+                      <tr
+                        onClick={() => handleRowClick(s.entry)}
+                        style={{
+                          borderBottom: isExpanded ? "none" : `1px solid ${COLORS.border}`,
+                          background: isMe ? `${COLORS.green}12` : isExpanded ? `${COLORS.blue}08` : "transparent",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <td style={{ padding: "10px 6px", textAlign: "center", fontWeight: 700, fontFamily: "monospace", color: isMe ? COLORS.green : COLORS.text }}>{s.rank}</td>
+                        <td style={{ padding: "10px 2px", textAlign: "center", width: 28 }}><RankChange rank={s.rank} lastRank={s.last_rank} /></td>
+                        <td style={{ padding: "10px 6px", fontWeight: isMe ? 700 : 400, color: isMe ? COLORS.green : COLORS.text }}>{s.player_name}</td>
+                        <td style={{ padding: "10px 6px", color: COLORS.textSecondary, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.entry_name}</td>
+                        <td style={{ padding: "10px 6px", textAlign: "center", fontFamily: "monospace", fontWeight: 600 }}>{s.event_total}</td>
+                        <td style={{ padding: "10px 6px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, color: isMe ? COLORS.green : COLORS.text }}>{s.total}</td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={6} style={{ padding: "0 6px 12px", background: `${COLORS.blue}08`, borderBottom: `1px solid ${COLORS.border}` }}>
+                            {picksLoading && <div style={{ padding: 12, textAlign: "center", color: COLORS.textMuted, fontSize: 11 }}>Loading team...</div>}
+                            {expandedPicks && !picksLoading && (
+                              <div style={{ padding: "8px 4px" }}>
+                                <div style={{ fontSize: 10, color: COLORS.textMuted, marginBottom: 6, fontWeight: 600, letterSpacing: 1 }}>
+                                  GW{expandedPicks.entry_history?.event} — {s.event_total} pts
+                                  {expandedPicks.entry_history?.event_transfers_cost > 0 && <span style={{ color: COLORS.red }}> (−{expandedPicks.entry_history.event_transfers_cost} hits)</span>}
+                                  {expandedPicks.active_chip && <span style={{ color: COLORS.amber }}> · {expandedPicks.active_chip}</span>}
+                                </div>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                  {(expandedPicks.picks || []).map((pk) => {
+                                    const p = plMap?.[pk.element];
+                                    if (!p) return null;
+                                    const isBench = pk.position > 11;
+                                    return (
+                                      <div key={pk.element} style={{
+                                        display: "flex", alignItems: "center", gap: 4, padding: "3px 8px",
+                                        background: isBench ? `${COLORS.textMuted}10` : COLORS.surface,
+                                        border: `1px solid ${COLORS.border}`,
+                                        borderRadius: 6, fontSize: 11, opacity: isBench ? 0.6 : 1,
+                                      }}>
+                                        <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 9 }}>{p.posL}</span>
+                                        <span style={{ fontWeight: 600 }}>{p.name}</span>
+                                        {pk.is_captain && <span style={{ fontSize: 8, background: COLORS.amber, color: COLORS.bg, padding: "0 3px", borderRadius: 2, fontWeight: 700 }}>C</span>}
+                                        {pk.is_vice_captain && <span style={{ fontSize: 8, background: COLORS.blue, color: COLORS.bg, padding: "0 3px", borderRadius: 2, fontWeight: 700 }}>V</span>}
+                                        <span style={{ fontFamily: "monospace", color: COLORS.textSecondary, fontSize: 10 }}>{p.form}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            {!expandedPicks && !picksLoading && <div style={{ padding: 12, textAlign: "center", color: COLORS.red, fontSize: 11 }}>Could not load team</div>}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -457,7 +528,7 @@ export default function TabMyPulse({ data }) {
       </div>
 
       {/* Mini Leagues Tab */}
-      {mySubTab === 1 && <MiniLeagues entryData={entryData} myEntryId={teamId} />}
+      {mySubTab === 1 && <MiniLeagues entryData={entryData} myEntryId={teamId} plMap={data.plMap} lastFinishedGW={data.lastFinishedGW} />}
 
       {/* My Team Tab */}
       {mySubTab === 0 && <>
