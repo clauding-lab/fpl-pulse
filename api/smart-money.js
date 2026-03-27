@@ -102,16 +102,15 @@ export default async function handler(req, res) {
     }).filter(Boolean);
 
     // Smart Money Buys: players elite managers own MORE than the field
+    // No slice — return all qualifying players, UI filters by position and slices to 10
     const smartBuys = [...players]
       .filter((p) => p.gap > 2 && p.top_own > 10)
-      .sort((a, b) => b.gap - a.gap)
-      .slice(0, 10);
+      .sort((a, b) => b.gap - a.gap);
 
     // Casual Traps: players the field owns MORE than elite managers
     const casualTraps = [...players]
       .filter((p) => p.gap < -2 && p.overall_own > 10)
-      .sort((a, b) => a.gap - b.gap)
-      .slice(0, 10);
+      .sort((a, b) => a.gap - b.gap);
 
     // Cache for 2 hours on Vercel CDN (this data doesn't change often within a GW)
     res.setHeader("Cache-Control", "s-maxage=7200, stale-while-revalidate=14400");

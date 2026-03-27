@@ -235,15 +235,14 @@ export function computeAll(apiData) {
 
   // --- Panel 3: Best Value ---
   const valueAll = pl.filter((p) => p.mins > 900 && +p.price > 0);
+  // No slice — compute for ALL qualifying players, UI filters by position and slices to 10
   const seasonValue = [...valueAll]
     .map((p) => ({ ...p, ptsPM: +(p.pts / +p.price).toFixed(1) }))
-    .sort((a, b) => b.ptsPM - a.ptsPM)
-    .slice(0, 50); // Keep 50 so position filters have enough data (UI slices to 10)
+    .sort((a, b) => b.ptsPM - a.ptsPM);
   const formValue = [...valueAll]
     .filter((p) => p.form > 0)
     .map((p) => ({ ...p, formPM: +(p.form / +p.price).toFixed(2) }))
-    .sort((a, b) => b.formPM - a.formPM)
-    .slice(0, 50);
+    .sort((a, b) => b.formPM - a.formPM);
 
   // --- Panel 7: Price Movers ---
   const risers = pl.filter((p) => p.pChg > 0).sort((a, b) => b.pChg - a.pChg).slice(0, 5);
