@@ -43,6 +43,7 @@ export default function TabPlayerIntel({ data }) {
         const mins = win.reduce((s, gw) => s + (gw.minutes || 0), 0);
         const goals = win.reduce((s, gw) => s + (gw.goals_scored || 0), 0);
         const assists = win.reduce((s, gw) => s + (gw.assists || 0), 0);
+        const pts = win.reduce((s, gw) => s + (gw.total_points || 0), 0);
 
         const p90 = mins > 0 ? 90 / mins : 0;
         const xGI = xG + xA;
@@ -58,7 +59,7 @@ export default function TabPlayerIntel({ data }) {
         const xgiDeltaVal = +(xGI90 - npxGI90).toFixed(2);
         const depPct = xGI90 > 0 ? Math.round((xgiDeltaVal / xGI90) * 100) : 0;
 
-        return { ...p, xG: +xG.toFixed(2), xA: +xA.toFixed(2), xGI90, npxG: +npxG.toFixed(2), npxGI90, xgiDeltaVal, depPct, goals, assists };
+        return { ...p, xG: +xG.toFixed(2), xA: +xA.toFixed(2), xGI90, npxG: +npxG.toFixed(2), npxGI90, xgiDeltaVal, depPct, goals, assists, pts };
       })
       .filter(Boolean)
       .sort((a, b) => b.xgiDeltaVal - a.xgiDeltaVal);
