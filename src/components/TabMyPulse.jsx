@@ -156,17 +156,18 @@ function SquadPlayer({ p, tm }) {
         {p.isCaptain && <span style={{ fontSize: 9, background: COLORS.amber, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700, flexShrink: 0 }}>C</span>}
         {p.isVice && <span style={{ fontSize: 9, background: COLORS.blue, color: COLORS.bg, padding: "1px 5px", borderRadius: 3, fontWeight: 700, flexShrink: 0 }}>V</span>}
       </div>
-      <div style={{ display: "flex", gap: 8, fontSize: 11, alignItems: "center", flexShrink: 0 }}>
-        <span style={{ color: COLORS.textSecondary, width: 30, textAlign: "right" }}>£{p.price}</span>
-        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
+      <div style={{ display: "flex", gap: 6, fontSize: 11, alignItems: "center", flexShrink: 0 }}>
+        <span style={{ color: COLORS.textSecondary, width: 28, textAlign: "right" }}>£{p.price}</span>
+        <span style={{ color: p.lastGwPts != null && p.lastGwPts >= 6 ? COLORS.green : p.lastGwPts != null && p.lastGwPts <= 2 ? COLORS.red : COLORS.textSecondary, fontWeight: 700, fontFamily: "monospace", width: 20, textAlign: "right" }}>
           {p.lastGwPts != null ? p.lastGwPts : "—"}
         </span>
-        <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 26, textAlign: "right" }}>
+        <span style={{ fontFamily: "monospace", width: 26, textAlign: "right", fontWeight: 600 }}>{p.pts}</span>
+        <span style={{ fontFamily: "monospace", width: 24, textAlign: "right", color: COLORS.textSecondary }}>{p.ppg}</span>
+        <span style={{ color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red, fontWeight: 700, fontFamily: "monospace", width: 22, textAlign: "right" }}>
           {p.form}
         </span>
-        <span style={{ color: borderColor, fontWeight: 700, fontFamily: "monospace", width: 30, textAlign: "right" }}>
-          {p.composite}
-        </span>
+        <span style={{ fontFamily: "monospace", width: 26, textAlign: "right", color: COLORS.textSecondary }}>{p.own}%</span>
+        <span style={{ fontFamily: "monospace", width: 18, textAlign: "right", color: COLORS.amber }}>{p.bonus}</span>
         <div style={{ display: "flex", gap: 2 }}>
           {(p.next5 || []).map((f, i) => (
             <div key={i} title={`GW${f.gw}: ${tm?.[f.opp]?.short_name || "?"} ${f.home ? "(H)" : "(A)"}`} style={{
@@ -453,7 +454,7 @@ export default function TabMyPulse({ data }) {
     setEntryData(result.entry);
     localStorage.setItem(SAVED_TEAM_KEY, teamId.trim());
     const lastGwEntry = result.history?.current?.length ? result.history.current[result.history.current.length - 1] : null;
-    setAnalysis({ ...analyzeSquad(result.picks, data, result.history), lastGwEntry });
+    setAnalysis({ ...analyzeSquad(result.picks, data, result.history, result.liveGwPts), lastGwEntry });
     setMySubTab(0);
     setLoading(false);
   };
@@ -473,7 +474,7 @@ export default function TabMyPulse({ data }) {
           setManagerName(`${result.entry.player_first_name} ${result.entry.player_last_name}`);
           setEntryData(result.entry);
           const lastGwEntry = result.history?.current?.length ? result.history.current[result.history.current.length - 1] : null;
-          setAnalysis({ ...analyzeSquad(result.picks, data, result.history), lastGwEntry });
+          setAnalysis({ ...analyzeSquad(result.picks, data, result.history, result.liveGwPts), lastGwEntry });
         }
         setLoading(false);
       })();
@@ -628,11 +629,14 @@ export default function TabMyPulse({ data }) {
       {/* Squad List */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, letterSpacing: 1.5, color: COLORS.text, marginBottom: 8, fontWeight: 700 }}>STARTING XI</div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "0 12px 6px", fontSize: 8, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
-          <span style={{ width: 30, textAlign: "right" }}>PRICE</span>
-          <span style={{ width: 22, textAlign: "right" }}>GW</span>
-          <span style={{ width: 26, textAlign: "right" }}>FORM</span>
-          <span style={{ width: 30, textAlign: "right" }}>SCORE</span>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, padding: "0 12px 6px", fontSize: 8, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 1 }}>
+          <span style={{ width: 28, textAlign: "right" }}>PRICE</span>
+          <span style={{ width: 20, textAlign: "right" }}>LAST</span>
+          <span style={{ width: 26, textAlign: "right" }}>TOTAL</span>
+          <span style={{ width: 24, textAlign: "right" }}>AVG</span>
+          <span style={{ width: 22, textAlign: "right" }}>FORM</span>
+          <span style={{ width: 26, textAlign: "right" }}>OWN%</span>
+          <span style={{ width: 18, textAlign: "right" }}>BON</span>
           <span style={{ width: 120, textAlign: "center" }}>NEXT 5 FIXTURES</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>

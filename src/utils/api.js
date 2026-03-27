@@ -18,14 +18,21 @@ export async function fetchPlayerSummary(playerId) {
 
 export async function fetchSquad(teamId, gw) {
   try {
-    const [picksR, entryR, historyR] = await Promise.all([
+    const [picksR, entryR, historyR, liveR] = await Promise.all([
       fetch(`${FPL_PROXY}entry/${teamId}/event/${gw}/picks/`),
       fetch(`${FPL_PROXY}entry/${teamId}/`),
       fetch(`${FPL_PROXY}entry/${teamId}/history/`),
+      fetch(`${FPL_PROXY}event/${gw}/live/`),
     ]);
     if (!picksR.ok || !entryR.ok) throw new Error();
     const history = historyR.ok ? await historyR.json() : null;
-    return { picks: await picksR.json(), entry: await entryR.json(), history };
+    // Build per-player GW points map from live data
+    const liveGwPts = {};
+    if (liveR.ok) {
+      const liveData = await liveR.json();
+      (liveData.elements || []).forEach((el) => { liveGwPts[el.id] = el.stats?.total_points ?? null; });
+    }
+    return { picks: await picksR.json(), entry: await entryR.json(), history, liveGwPts };
   } catch {
     return null;
   }

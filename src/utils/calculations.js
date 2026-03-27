@@ -329,15 +329,8 @@ export function computeAll(apiData) {
 }
 
 // Squad analysis for My Pulse
-export function analyzeSquad(picks, data, history) {
+export function analyzeSquad(picks, data, history, liveGwPts) {
   const { pl, plMap, uf } = data;
-
-  // Last GW points per player (from the picks response)
-  const lastGwPts = {};
-  (picks.picks || []).forEach((pk) => {
-    // element_summary in picks gives GW points if available
-    lastGwPts[pk.element] = pk.points ?? null;
-  });
 
   const squad = picks.picks.map((pk) => {
     const p = plMap[pk.element];
@@ -345,10 +338,11 @@ export function analyzeSquad(picks, data, history) {
     const composite = +(p.form * 0.4 + p.fR * 3 + p.ppg * 0.3).toFixed(2);
     const status = composite >= 4.5 ? "green" : composite >= 3 ? "amber" : "red";
     const next5 = (uf[p.teamId] || []).slice(0, 5);
+    // Per-player GW points from live endpoint
+    const lastGwPts = liveGwPts?.[pk.element] ?? null;
     return {
       ...p, multiplier: pk.multiplier, isCaptain: pk.is_captain, isVice: pk.is_vice_captain,
-      isBench: pk.position > 11, composite, status, next5,
-      lastGwPts: lastGwPts[pk.element] ?? null,
+      isBench: pk.position > 11, composite, status, next5, lastGwPts,
     };
   }).filter(Boolean);
 
