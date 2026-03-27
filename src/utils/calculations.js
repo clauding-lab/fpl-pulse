@@ -171,6 +171,18 @@ export function computeAll(apiData) {
       defCon90: parseFloat(p.defensive_contribution_per_90) || 0,
       apps: Math.max(Math.floor(m / 45), 1),
       fScore: +(form * 0.35 + xGI90 * 2.5 + bps90 * 0.005 + fR * 2 + ppg * 0.3).toFixed(2),
+      // Penalty / xGI delta fields
+      penOrder: p.penalties_order,
+      penMissed: p.penalties_missed || 0,
+      // GK-specific fields
+      saves: p.saves || 0,
+      savesPer90: parseFloat(p.saves_per_90) || 0,
+      penSaved: p.penalties_saved || 0,
+      gc: p.goals_conceded || 0,
+      gcPer90: parseFloat(p.goals_conceded_per_90) || 0,
+      xGC: parseFloat(p.expected_goals_conceded) || 0,
+      xGCper90: parseFloat(p.expected_goals_conceded_per_90) || 0,
+      csPer90: parseFloat(p.clean_sheets_per_90) || 0,
     };
   });
 
@@ -269,11 +281,50 @@ export function computeAll(apiData) {
     })
     .filter(Boolean);
 
+  // --- xGI Delta: penalty dependency analysis ---
+  // Estimate penalty xG: each penalty taken ≈ 0.76 xG
+  // Approximate pens taken from: player is on penalties + (goals - open play contribution)
+  const xgiDelta = pl
+    .filter((p) => p.pos >= 2 && p.mins > 900 && p.xGI > 0)
+    .map((p) => {
+      const isPenTaker = p.penOrder && p.penOrder <= 2;
+      // Estimate pens taken: for designated takers, estimate from xG surplus over npxG norms
+      // Simple heuristic: if on pens, estimate ~0.76 xG per pen scored (goals that look like pen contributions)
+      const estPensTaken = isPenTaker ? Math.max(Math.round(p.goals * 0.25), 1) : 0; // rough: ~25% of goals from pens for designated takers
+      const penXG = estPensTaken * 0.76;
+      const npxG = Math.max(p.xG - penXG, 0);
+      const npxGI = npxG + p.xA;
+      const p90 = p.mins > 0 ? 90 / p.mins : 0;
+      const npxGI90 = +(npxGI * p90).toFixed(2);
+      const xgiDeltaVal = +(p.xGI90 - npxGI90).toFixed(2); // penalty dependency
+      const depPct = p.xGI90 > 0 ? Math.round((xgiDeltaVal / p.xGI90) * 100) : 0;
+      return { ...p, isPenTaker, estPensTaken, penXG: +penXG.toFixed(2), npxG: +npxG.toFixed(2), npxGI: +npxGI.toFixed(2), npxGI90, xgiDeltaVal, depPct };
+    })
+    .sort((a, b) => b.xgiDeltaVal - a.xgiDeltaVal);
+
+  // --- Shot Stoppers: GK composite ranking ---
+  const shotStoppers = pl
+    .filter((p) => p.pos === 1 && p.mins >= 1350) // GKs with 15+ starts
+    .map((p) => {
+      const savePoints = Math.floor(p.saves / 3); // FPL: 1 pt per 3 saves
+      const savePtsPer90 = p.mins > 0 ? +(savePoints * 90 / p.mins).toFixed(2) : 0;
+      const csRate = p.apps > 0 ? +(p.cs / p.apps).toFixed(2) : 0;
+      const bonusPerApp = p.apps > 0 ? +(p.bonus / p.apps).toFixed(2) : 0;
+      // xSaves: difference between xGC and actual GC (positive = outperforming defense)
+      const xSaves = +(p.xGC - p.gc).toFixed(1); // positive = saved more than expected
+      // GK composite value
+      const gkValue = +(p.savesPer90 * 0.30 + savePtsPer90 * 0.25 + csRate * 0.25 + bonusPerApp * 0.20).toFixed(2);
+      return { ...p, savePoints, savePtsPer90, csRate, bonusPerApp, xSaves, gkValue };
+    })
+    .sort((a, b) => b.gkValue - a.gkValue);
+
   return {
     gw, lastFinishedGW, gwA, sAvg, r3, tRR, tm, pl, plMap, tpl, tH, pM, flagged, fPl, gems, hh, fk, risk,
     dgwTeams, bgwTeams, uf,
     // Season Pulse panels
     glance, defcon, seasonValue, formValue, risers, fallers,
+    // Player Intel sub-tabs
+    xgiDelta, shotStoppers,
   };
 }
 

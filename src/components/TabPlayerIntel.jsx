@@ -25,7 +25,7 @@ export default function TabPlayerIntel({ data }) {
           paddingBottom: 2,
         }}
       >
-        {["Form Tracker", "Floor Kings", "Haul Hunters", "Risk Monitor"].map((s, i) => (
+        {["Form Tracker", "Floor Kings", "Haul Hunters", "Risk Monitor", "xGI Delta", "Shot Stoppers"].map((s, i) => (
           <SubBtn key={i} label={s} active={subTab === i} onClick={() => setSubTab(i)} />
         ))}
       </div>
@@ -256,6 +256,79 @@ export default function TabPlayerIntel({ data }) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* xGI Delta — Penalty Dependency */}
+      {subTab === 4 && (
+        <div>
+          <Card style={{ marginBottom: 14, padding: "12px 16px" }}>
+            <div style={{ fontSize: 12, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+              <strong style={{ color: COLORS.text }}>What is xGI Delta?</strong> The gap between total xGI/90 and non-penalty xGI/90.
+              High delta = player's expected output is inflated by penalties. If they lose penalty duty, their xGI collapses.
+              <span style={{ color: COLORS.amber, fontWeight: 600 }}> PEN</span> = designated penalty taker.
+            </div>
+          </Card>
+          <PlayerTable
+            players={data.xgiDelta.slice(0, 30)}
+            columns={[
+              { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
+              { header: "Player", render: (p) => (
+                <span>
+                  {p.name}
+                  {p.isPenTaker && <span style={{ marginLeft: 4, fontSize: 8, background: COLORS.amber, color: COLORS.bg, padding: "1px 4px", borderRadius: 3, fontWeight: 700 }}>PEN</span>}
+                </span>
+              ), style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
+              { header: "Pos", render: (p) => <span style={{ color: POS_COLORS[p.pos], fontWeight: 700, fontSize: 10 }}>{p.posL}</span> },
+              { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
+              { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
+              { header: "xGI/90", render: (p) => p.xGI90, style: () => ({ fontFamily: "monospace", fontWeight: 600 }) },
+              { header: "npxGI/90", render: (p) => p.npxGI90, style: () => ({ fontFamily: "monospace", color: COLORS.green, fontWeight: 600 }) },
+              { header: "Delta", render: (p) => p.xgiDeltaVal > 0 ? `+${p.xgiDeltaVal}` : p.xgiDeltaVal, style: (p) => ({ fontFamily: "monospace", fontWeight: 800, color: p.xgiDeltaVal >= 0.15 ? COLORS.red : p.xgiDeltaVal >= 0.05 ? COLORS.amber : COLORS.green }) },
+              { header: "Dep%", render: (p) => `${p.depPct}%`, style: (p) => ({ fontWeight: 700, color: p.depPct >= 30 ? COLORS.red : p.depPct >= 15 ? COLORS.amber : COLORS.green }), title: "Penalty dependency: % of xGI from penalties" },
+              { header: "Goals", render: (p) => p.goals, style: () => ({ fontWeight: 600 }) },
+              { header: "xG", render: (p) => p.xG.toFixed(1), style: () => ({ fontFamily: "monospace" }) },
+              { header: "npxG", render: (p) => p.npxG.toFixed(1), style: () => ({ fontFamily: "monospace", color: COLORS.green }) },
+              { header: "Form", render: (p) => p.form, style: (p) => ({ fontWeight: 700, color: p.form >= 5 ? COLORS.green : p.form >= 3 ? COLORS.amber : COLORS.red }) },
+              { header: "Own%", render: (p) => `${p.own}%`, style: () => ({ color: COLORS.textSecondary }) },
+            ]}
+          />
+          <div style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 10, fontStyle: "italic" }}>
+            npxG estimated by removing ~0.76 xG per estimated penalty taken. Exact npxG requires FBref/xgstat data.
+          </div>
+        </div>
+      )}
+
+      {/* Shot Stoppers — GK Rankings */}
+      {subTab === 5 && (
+        <div>
+          <Card style={{ marginBottom: 14, padding: "12px 16px" }}>
+            <div style={{ fontSize: 12, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+              <strong style={{ color: COLORS.text }}>GK Value Score</strong> = Saves/90 (30%) + Save Pts/90 (25%) + CS Rate (25%) + Bonus/App (20%).
+              <strong style={{ color: COLORS.green }}> xSaves</strong> = xGC minus actual GC. Positive = keeper saving more than expected (outperforming their defense).
+            </div>
+          </Card>
+          <PlayerTable
+            players={data.shotStoppers}
+            columns={[
+              { header: "#", render: (_, i) => i + 1, style: () => ({ color: COLORS.textMuted, fontSize: 11 }) },
+              { header: "GK", render: (p) => p.name, style: () => ({ fontWeight: 600, whiteSpace: "nowrap" }) },
+              { header: "Team", render: (p) => p.team, style: () => ({ color: COLORS.textSecondary }) },
+              { header: "£", render: (p) => p.price, style: () => ({ fontFamily: "monospace" }) },
+              { header: "Pts", render: (p) => p.pts, style: () => ({ fontWeight: 600 }) },
+              { header: "Saves", render: (p) => p.saves, style: () => ({ fontWeight: 600 }) },
+              { header: "Sv/90", render: (p) => p.savesPer90.toFixed(1), style: () => ({ fontFamily: "monospace", color: COLORS.blue }) },
+              { header: "SvPts", render: (p) => p.savePoints, style: () => ({ fontWeight: 600 }), title: "Save points (1 per 3 saves)" },
+              { header: "CS", render: (p) => p.cs, style: () => ({ fontWeight: 600 }) },
+              { header: "CS%", render: (p) => `${(p.csRate * 100).toFixed(0)}%`, style: (p) => ({ color: p.csRate >= 0.35 ? COLORS.green : COLORS.textSecondary }) },
+              { header: "Bon/App", render: (p) => p.bonusPerApp, style: () => ({ fontFamily: "monospace", color: COLORS.amber }) },
+              { header: "GC", render: (p) => p.gc, style: () => ({ color: COLORS.textSecondary }) },
+              { header: "xGC", render: (p) => p.xGC.toFixed(1), style: () => ({ fontFamily: "monospace", color: COLORS.textSecondary }) },
+              { header: "xSaves", render: (p) => (p.xSaves >= 0 ? "+" : "") + p.xSaves, style: (p) => ({ fontWeight: 700, fontFamily: "monospace", color: p.xSaves >= 2 ? COLORS.green : p.xSaves <= -2 ? COLORS.red : COLORS.textSecondary }), title: "xGC minus actual GC. Positive = outperforming defense" },
+              { header: "PenSvd", render: (p) => p.penSaved, style: () => ({ fontWeight: 600, color: COLORS.green }) },
+              { header: "GK Value", render: (p) => p.gkValue, style: () => ({ fontWeight: 800, color: COLORS.green, fontFamily: "monospace" }) },
+            ]}
+          />
         </div>
       )}
     </div>
