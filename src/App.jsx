@@ -10,7 +10,7 @@ import TabMyPulse from "./components/TabMyPulse";
 import TabDeepDive from "./components/TabDeepDive";
 import ScoreExplainer from "./components/ScoreExplainer";
 
-const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Hidden Gems", "Deep Dive", "My Pulse"];
+const TABS = ["Season Pulse", "Fixture Engine", "Player Intel", "Deep Dive", "My Team"];
 
 function LoadingScreen() {
   return (
@@ -168,10 +168,9 @@ export default function App() {
         {tab === 0 && <TabSeasonPulse data={data} />}
         {tab === 1 && <TabFixtureEngine data={data} />}
         {tab === 2 && <TabPlayerIntel data={data} />}
-        {tab === 3 && <TabHiddenGems data={data} />}
-        {tab === 4 && <TabDeepDive data={data} />}
-        {/* My Pulse stays mounted to preserve state (team ID, league selection) */}
-        <div style={{ display: tab === 5 ? "block" : "none" }}>
+        {tab === 3 && <TabDeepDive data={data} />}
+        {/* My Team stays mounted to preserve state (team ID, league selection) */}
+        <div style={{ display: tab === 4 ? "block" : "none" }}>
           <TabMyPulse data={data} />
         </div>
       </div>
@@ -209,9 +208,8 @@ export default function App() {
           { icon: "📊", label: "Season" },
           { icon: "📅", label: "Fixtures" },
           { icon: "⚡", label: "Players" },
-          { icon: "💎", label: "Gems" },
           { icon: "🔬", label: "Deep Dive" },
-          { icon: "👤", label: "My Pulse" },
+          { icon: "👤", label: "My Team" },
         ].map((t, i) => (
           <button
             key={i}

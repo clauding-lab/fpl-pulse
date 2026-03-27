@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { COLORS, POS_COLORS, POS_MAP, FDR_COLORS, FDR_TEXT } from "../utils/theme";
 import { Card, PlayerTable } from "./shared";
 import { playerPhotoUrl } from "../utils/api";
+import TabHiddenGems from "./TabHiddenGems";
 
 /* ─── helpers ─── */
 const Pill = ({ children, color }) => (
@@ -29,6 +30,7 @@ const SectionTitle = ({ children, sub }) => (
 
 /* ─── Sub-panel selector ─── */
 const PANELS = [
+  "Hidden Gems",
   "Eye Test vs Data",
   "Bandwagon Monitor",
   "Fixture Proof",
@@ -359,11 +361,12 @@ export default function TabDeepDive({ data }) {
         ))}
       </div>
 
-      {panel === 0 && <EyeTestPanel data={data} />}
-      {panel === 1 && <BandwagonPanel data={data} />}
-      {panel === 2 && <FixtureProofPanel data={data} />}
-      {panel === 3 && <CaptainRoulettePanel />}
-      {panel === 4 && <XgTablePanel data={data} />}
+      {panel === 0 && <TabHiddenGems data={data} />}
+      {panel === 1 && <EyeTestPanel data={data} />}
+      {panel === 2 && <BandwagonPanel data={data} />}
+      {panel === 3 && <FixtureProofPanel data={data} />}
+      {panel === 4 && <CaptainRoulettePanel />}
+      {panel === 5 && <XgTablePanel data={data} />}
     </div>
   );
 }

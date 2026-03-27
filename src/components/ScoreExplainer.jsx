@@ -106,28 +106,94 @@ const SECTIONS = [
     ],
   },
   {
-    tab: "Hidden Gems",
+    tab: "Deep Dive",
     panels: [
       {
-        name: "Gem Selection",
+        name: "Hidden Gems",
         metrics: [
           { label: "Criteria", formula: "ownership < 7%, ownership > 0.1%, form > median, minutes > 720", desc: "Low-owned players outperforming the median form with enough playing time to be reliable." },
           { label: "Sort", formula: "Composite score (same as Form Tracker)", desc: "Ranked by the same weighted composite — form, xGI, BPS, fixtures, PPG." },
-          { label: "xG gap", formula: "goals_scored - expected_goals", desc: "Positive = overperforming xG (scoring more than expected). Negative = underperforming (due a correction)." },
+          { label: "xG gap", formula: "goals_scored - expected_goals", desc: "Positive = overperforming xG. Negative = underperforming (due a correction)." },
           { label: "xA gap", formula: "assists - expected_assists", desc: "Same concept for assists. Positive = creating more than models predict." },
+        ],
+      },
+      {
+        name: "Eye Test vs Data",
+        metrics: [
+          { label: "Debate Score", formula: "|form - xGI90×8| + |ppg - form|", desc: "Measures how much a player's eye test (form, blanks) contradicts their underlying numbers." },
+          { label: "Eye Test column", formula: "Recent blanks, price drops, ownership changes", desc: "What the casual FPL community sees — the surface-level narrative." },
+          { label: "Data column", formula: "xGI/90, shot volume, BPS/90 trends", desc: "What the numbers actually say — underlying quality metrics." },
+        ],
+      },
+      {
+        name: "Bandwagon Monitor",
+        metrics: [
+          { label: "Ownership Velocity", formula: "current_ownership - ownership_4_weeks_ago", desc: "How fast ownership is changing. Requires Supabase weekly snapshots (placeholder until enough data)." },
+          { label: "Bandwagon Alert", formula: "Top 10 by positive velocity", desc: "Players with the fastest ownership gains — are managers late or early?" },
+          { label: "Sinking Ships", formula: "Top 10 by negative velocity", desc: "Mass sells. Are managers right to dump them, or is this a buy-low window?" },
+        ],
+      },
+      {
+        name: "Fixture Proof",
+        metrics: [
+          { label: "Easy Fixture Avg", formula: "avg points when FDR ≤ 2", desc: "Average FPL points in games rated easy by FPL's difficulty system." },
+          { label: "Hard Fixture Avg", formula: "avg points when FDR ≥ 4", desc: "Average FPL points in games rated hard or very hard." },
+          { label: "Fixture-Proof Ratio", formula: "hard_avg / easy_avg", desc: "Near 1.0 = same output regardless of opponent. Below 0.5 = only scores against weak teams. Above 1.0 = big-game player." },
+        ],
+      },
+      {
+        name: "Captain Roulette",
+        metrics: [
+          { label: "Most Captained", formula: "Highest-owned MID/FWD each GW (proxy)", desc: "Approximated as the most-owned attacking player that GW — the crowd's captain." },
+          { label: "Optimal Captain", formula: "Highest actual scorer each GW × 2", desc: "Who you should have captained with perfect hindsight." },
+          { label: "Points Left on Table", formula: "optimal_captain_pts - most_captained_pts", desc: "How much the crowd lost by following the template captain." },
+        ],
+      },
+      {
+        name: "xG League Table",
+        metrics: [
+          { label: "Team xG", formula: "SUM(expected_goals) for all players in team", desc: "Total expected goals created by the team, aggregated from individual player xG." },
+          { label: "Team xGA", formula: "SUM(opponent xG) from fixture data", desc: "Expected goals against — how many goals the team should have conceded." },
+          { label: "xPts", formula: "Simulated points from xG/xGA differentials", desc: "Where the team should sit in the league based purely on expected metrics. Teams above their xPts position are overperforming (regression risk)." },
         ],
       },
     ],
   },
   {
-    tab: "My Pulse",
+    tab: "My Team",
     panels: [
+      {
+        name: "Rank Details",
+        metrics: [
+          { label: "Overall Rank", formula: "entry.summary_overall_rank from /entry/{id}/", desc: "Your current position among all FPL managers worldwide." },
+          { label: "Rank Change", formula: "previous_gw_rank - current_rank", desc: "How many places you moved since last GW. Green arrow = climbed, Red = dropped." },
+          { label: "% Improvement", formula: "(rank_change / previous_rank) × 100", desc: "Percentage rank improvement from the previous gameweek." },
+          { label: "GW Points", formula: "From /entry/{id}/event/{gw}/picks/ entry_history", desc: "Your actual GW score including captain multiplier and hit costs." },
+          { label: "Bench Points", formula: "points_on_bench from entry_history", desc: "Points scored by your bench players that GW — wasted points." },
+        ],
+      },
+      {
+        name: "Overall Rank Chart",
+        metrics: [
+          { label: "Green bars", formula: "GW points when rank improved", desc: "GWs where you climbed in overall rank. Taller = higher score." },
+          { label: "Red bars", formula: "GW points when rank dropped", desc: "GWs where you fell in rank." },
+          { label: "Blue line", formula: "Overall rank per GW (inverted scale)", desc: "Rank trajectory — higher on chart = better rank. Shows your season-long journey." },
+        ],
+      },
+      {
+        name: "Starting XI",
+        metrics: [
+          { label: "Own%", formula: "selected_by_percent", desc: "What percentage of all FPL managers own this player." },
+          { label: "GW Pts", formula: "event_points (last completed GW)", desc: "Points scored in the most recent gameweek." },
+          { label: "Form", formula: "FPL's 30-day rolling points_per_game", desc: "Recent form — official FPL calculation." },
+          { label: "Next 5 Fixtures", formula: "FDR-coloured upcoming opponent badges", desc: "Color-coded by difficulty: green = easy, red = hard." },
+        ],
+      },
       {
         name: "Squad Health",
         metrics: [
-          { label: "Health Score", formula: "mean(squad composite scores) × 10, out of 100", desc: "Average composite score across your 15 players, scaled to 100. Higher = healthier squad." },
-          { label: "Composite Score", formula: "form×0.4 + fixtureRating×3 + ppg×0.3", desc: "Per-player score combining recent form, upcoming fixture difficulty, and season-long points per game." },
-          { label: "Status", formula: "Green ≥ 4.5, Amber ≥ 3, Red < 3", desc: "Traffic light system based on composite score. Reds are your transfer priorities." },
+          { label: "Health Score", formula: "mean(squad composite scores) × 10, out of 100", desc: "Average composite score across your 15 players, scaled to 100." },
+          { label: "Status", formula: "Green ≥ 4.5, Amber ≥ 3, Red < 3", desc: "Traffic light system based on composite score. Reds are transfer priorities." },
         ],
       },
       {
@@ -137,14 +203,22 @@ const SECTIONS = [
           { label: "Bench Boost GW", formula: "GW with highest total (6 - FDR) across all 15 players", desc: "The upcoming GW where your full squad has the easiest combined fixtures." },
           { label: "Triple Captain GW", formula: "GW where captain's form × (6 - FDR) is highest", desc: "Best GW to triple-captain based on your captain pick's form and fixture." },
           { label: "Free Hit GW", formula: "GW with lowest total (6 - FDR) across squad", desc: "Your worst fixture GW — when you'd benefit most from a completely different team." },
-          { label: "Wildcard", formula: "CONSIDER if 4+ players are Red status", desc: "Suggests considering a wildcard when a significant portion of your squad is underperforming." },
+          { label: "Wildcard", formula: "CONSIDER if 4+ players are Red status", desc: "Suggests considering a wildcard when a significant portion is underperforming." },
         ],
       },
       {
         name: "Best XI & Captain",
         metrics: [
-          { label: "Best XI", formula: "Top 11 by composite in valid formation (1GK, 3+DEF, 2+MID, 1+FWD)", desc: "Optimal starting lineup from your 15 players based on current composite scores." },
-          { label: "Captain Pick", formula: "Highest composite in Best XI", desc: "The player with the best combination of form and fixtures for the upcoming GW." },
+          { label: "Best XI", formula: "Top 11 by composite in valid formation (1GK, 3+DEF, 2+MID, 1+FWD)", desc: "Optimal starting lineup from your 15 players." },
+          { label: "Captain Pick", formula: "Highest composite in Best XI", desc: "Best combination of form and fixtures for the upcoming GW." },
+        ],
+      },
+      {
+        name: "Mini Leagues",
+        metrics: [
+          { label: "League standings", formula: "/leagues-classic/{id}/standings/", desc: "Live standings for any classic mini-league your team is part of." },
+          { label: "Rank Change", formula: "rank - last_rank", desc: "Green arrow = climbed since last GW, Red = dropped. Dash = unchanged." },
+          { label: "Expanded team", formula: "Per-manager /event/{gw}/picks/", desc: "Tap any row to see their full GW squad with captain pts doubled." },
         ],
       },
     ],
